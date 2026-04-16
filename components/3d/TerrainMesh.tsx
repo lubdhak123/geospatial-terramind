@@ -51,11 +51,11 @@ export function TerrainMesh({
       receiveShadow
       castShadow
       onClick={(e) => {
-        e.stopPropagation()
+        // Don't stopPropagation — let GridTerrainOverlay cell planes (at y=1.7)
+        // intercept first via renderOrder. Terrain click fires only if no cell consumed it.
         if (onClick) onClick(e.point)
       }}
       onPointerMove={(e) => {
-        e.stopPropagation()
         if (onHover) onHover(e.point)
       }}
       onPointerOut={() => {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Leaf, Satellite, PenTool, ChevronRight, Zap, Eye } from 'lucide-react'
+import { Leaf, Satellite, PenTool, ChevronRight, Zap, Eye, Grid3X3 } from 'lucide-react'
 
 export default function LandingPage() {
   const router = useRouter()
@@ -78,6 +78,16 @@ export default function LandingPage() {
           >
             <Eye size={16} />
             <span>View Demo Field</span>
+            <ChevronRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+          </button>
+
+          {/* Grid Intelligence */}
+          <button
+            onClick={() => router.push('/grid')}
+            className="group flex w-52 items-center justify-center gap-2.5 rounded-2xl border border-emerald-900/50 bg-emerald-950/20 px-6 py-4 text-sm font-semibold text-emerald-300 backdrop-blur-sm transition-all duration-200 hover:border-emerald-700/60 hover:bg-emerald-900/20 hover:text-white active:scale-[0.98]"
+          >
+            <Grid3X3 size={16} />
+            <span>Grid Intelligence</span>
             <ChevronRight size={14} className="transition-transform group-hover:translate-x-0.5" />
           </button>
         </div>

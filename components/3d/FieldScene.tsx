@@ -10,7 +10,13 @@ import { WeatherSystem, type WeatherConfig } from './WeatherSystem'
 export type { WeatherConfig }
 import { CropInstances } from './CropInstances'
 import { QuadrantOverlay } from './QuadrantOverlay'
+import { GridTerrainOverlay } from './GridTerrainOverlay'
+import { TerrainGridCamera } from './TerrainGridCamera'
+import { IrrigationOverlay } from './IrrigationOverlay'
+import { useIrrigationStore } from '@/lib/irrigationStore'
 import { QUADRANT_DATA, type QuadrantId } from '@/lib/quadrantStore'
+import { useHierarchyStore } from '@/lib/hierarchyStore'
+import CellAnalysisPanel from '@/components/CellAnalysisPanel'
 
 // ── Types ─────────────────────────────────────────────────────────────
 export interface ZoneInfo {
@@ -47,6 +53,8 @@ export interface FieldSceneProps {
   // Quadrant system
   selectedQuadrant?: QuadrantId | null
   onQuadrantSelect?: (id: QuadrantId | null) => void
+  // Irrigation overlay toggle
+  showIrrigation?: boolean
 }
 
 // ── Crop stage data ────────────────────────────────────────────────────
@@ -544,6 +552,7 @@ interface SceneProps {
   center?: [number, number]
   selectedQuadrant?: QuadrantId | null
   onQuadrantSelect?: (id: QuadrantId | null) => void
+  showIrrigation?: boolean
 }
 
 // ═══════════════════════════════════════════════
@@ -649,10 +658,12 @@ function Scene({
   cropMonth, weather = { type: 'clear', intensity: 0 }, introPlaying, skipIntroRef,
   onIntroComplete, onZoneClick, onZoneHover, onZoneLeave, onDroneMode,
   boundaryCoords, center, focusedZonePos, selectedQuadrant, onQuadrantSelect,
+  showIrrigation = false,
 }: SceneProps & {
   focusedZonePos?: { x: number, z: number } | null
   selectedQuadrant?: QuadrantId | null
   onQuadrantSelect?: (id: QuadrantId | null) => void
+  showIrrigation?: boolean
 }) {
   const controlsRef = useRef<any>(null)
 
@@ -760,6 +771,13 @@ function Scene({
         />
       )}
 
+      {/* Grid × Terrain integration — uses hierarchyStore */}
+      <GridTerrainOverlay />
+      <TerrainGridCamera controlsRef={controlsRef} />
+
+      {/* Underground irrigation network — uses irrigationStore */}
+      {showIrrigation && <IrrigationOverlay />}
+
       {/* Camera controls */}
       <OrbitControls
         ref={controlsRef}
@@ -853,6 +871,170 @@ function IntroOverlay({ visible, onSkip }: { visible: boolean; onSkip: () => voi
 }
 
 // ═══════════════════════════════════════════════
+// GRID DRILL HUD — back/reset buttons for 3D grid navigation
+// ═══════════════════════════════════════════════
+function GridDrillHUD() {
+  const { drillPath, drillOut, resetToLevel1 } = useHierarchyStore()
+  const level = drillPath.length === 0 ? 1 : drillPath.length === 1 ? 2 : 3
+
+  if (drillPath.length === 0) return null
+
+  const levelMeta: Record<number, { label: string; icon: string; color: string }> = {
+    1: { label: 'Field', icon: '🌾', color: '#38bdf8' },
+    2: { label: 'Zone',  icon: '🔬', color: '#a78bfa' },
+    3: { label: 'Micro', icon: '⚗️',  color: '#f59e0b' },
+  }
+  const m = levelMeta[level]
+
+  return (
+    <div style={{
+      position: 'absolute', top: 80, left: 16, zIndex: 20,
+      display: 'flex', flexDirection: 'column', gap: 6,
+      fontFamily: 'system-ui, sans-serif',
+    }}>
+      {/* Level badge */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 6,
+        background: `${m.color}18`, border: `1px solid ${m.color}44`,
+        borderRadius: 10, padding: '6px 12px',
+        backdropFilter: 'blur(12px)',
+      }}>
+        <span style={{ fontSize: 12 }}>{m.icon}</span>
+        <span style={{ color: m.color, fontSize: 10, fontWeight: 900, letterSpacing: '0.12em' }}>
+          {m.label.toUpperCase()} GRID
+        </span>
+        <span style={{ color: '#475569', fontSize: 9 }}>· Level {level}</span>
+      </div>
+
+      {/* Breadcrumb path */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 4,
+        padding: '4px 8px',
+        background: 'rgba(3,13,26,0.8)', borderRadius: 8,
+        backdropFilter: 'blur(12px)',
+        border: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        <span style={{ color: '#475569', fontSize: 8 }}>🏠 Field</span>
+        {drillPath.map((entry, i) => (
+          <span key={entry.cell.id} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <span style={{ color: '#334155', fontSize: 8 }}>›</span>
+            <span style={{
+              color: i === drillPath.length - 1 ? m.color : '#64748b',
+              fontSize: 8, fontWeight: 700,
+            }}>
+              {entry.cell.boundLabel}
+            </span>
+          </span>
+        ))}
+      </div>
+
+      {/* Controls */}
+      <div style={{ display: 'flex', gap: 4 }}>
+        <button
+          onClick={drillOut}
+          style={{
+            background: 'rgba(3,13,26,0.85)', border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: 8, padding: '5px 10px', color: '#94a3b8',
+            fontSize: 10, fontWeight: 800, cursor: 'pointer',
+            letterSpacing: '0.05em',
+            backdropFilter: 'blur(12px)',
+          }}
+        >
+          ← Back
+        </button>
+        <button
+          onClick={resetToLevel1}
+          style={{
+            background: 'rgba(3,13,26,0.85)', border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: 8, padding: '5px 10px', color: '#64748b',
+            fontSize: 10, fontWeight: 800, cursor: 'pointer',
+            letterSpacing: '0.05em',
+            backdropFilter: 'blur(12px)',
+          }}
+        >
+          ↺ Field View
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════
+// IRRIGATION OVERLAY HUD — toggle controls
+// ═══════════════════════════════════════════════
+function IrrigationHUD() {
+  const {
+    network,
+    showPipes, setShowPipes,
+    showMoistureOverlay, setShowMoistureOverlay,
+    showFlowParticles, setShowFlowParticles,
+    selectedCell, setSelectedCell,
+    selectedPipe, setSelectedPipe,
+  } = useIrrigationStore()
+
+  return (
+    <div style={{
+      position: 'absolute', top: 80, right: 16, zIndex: 20,
+      display: 'flex', flexDirection: 'column', gap: 5,
+      fontFamily: 'system-ui, sans-serif',
+    }}>
+      {/* Network summary badge */}
+      <div style={{
+        background: 'rgba(3,13,26,0.90)',
+        border: '1px solid rgba(56,189,248,0.3)',
+        borderRadius: 10, padding: '6px 10px',
+        backdropFilter: 'blur(12px)',
+      }}>
+        <div style={{ color: '#38bdf8', fontSize: 8, fontWeight: 900, letterSpacing: '0.12em', marginBottom: 4 }}>
+          💧 IRRIGATION
+        </div>
+        {[
+          { color: '#22c55e', label: 'Coverage', value: `${network.coveragePct}%` },
+          { color: '#ef4444', label: 'Blocked',  value: `${network.blockedPipes} pipes` },
+          { color: '#f59e0b', label: 'Dry zones', value: `${network.dryCells} cells` },
+        ].map(r => (
+          <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 1 }}>
+            <span style={{ color: '#475569', fontSize: 8 }}>{r.label}</span>
+            <span style={{ color: r.color, fontSize: 8, fontWeight: 900 }}>{r.value}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Toggle buttons */}
+      {[
+        { label: '🔧 Pipes',     value: showPipes,            set: setShowPipes,           color: '#38bdf8' },
+        { label: '💧 Moisture',  value: showMoistureOverlay,  set: setShowMoistureOverlay, color: '#a78bfa' },
+        { label: '✦ Flow',       value: showFlowParticles,    set: setShowFlowParticles,   color: '#22c55e' },
+      ].map(b => (
+        <button key={b.label} onClick={() => b.set(!b.value)} style={{
+          background: b.value ? `${b.color}18` : 'rgba(255,255,255,0.03)',
+          border: `1px solid ${b.value ? b.color + '50' : 'rgba(255,255,255,0.08)'}`,
+          borderRadius: 8, padding: '5px 10px',
+          color: b.value ? b.color : '#475569',
+          fontSize: 9, fontWeight: 800, cursor: 'pointer',
+          textAlign: 'left', backdropFilter: 'blur(10px)',
+          transition: 'all 0.15s ease',
+        }}>
+          {b.label}
+        </button>
+      ))}
+
+      {/* Clear selection */}
+      {(selectedCell || selectedPipe) && (
+        <button onClick={() => { setSelectedCell(null); setSelectedPipe(null) }} style={{
+          background: '#ef444410', border: '1px solid #ef444440',
+          borderRadius: 8, padding: '5px 10px',
+          color: '#ef4444', fontSize: 9, fontWeight: 800, cursor: 'pointer',
+          backdropFilter: 'blur(10px)',
+        }}>
+          ✕ Clear selection
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════
 // MAIN EXPORT
 // ═══════════════════════════════════════════════
 export default function FieldScene({
@@ -866,6 +1048,7 @@ export default function FieldScene({
   focusedZonePos,
   selectedQuadrant,
   onQuadrantSelect,
+  showIrrigation = false,
 }: FieldSceneProps) {
   const [selectedZone, setSelectedZone] = useState<ZoneInfo | null>(null)
   const [introPlaying,  setIntroPlaying]  = useState(false)
@@ -939,6 +1122,7 @@ export default function FieldScene({
             focusedZonePos={selectedQuadrant ? null : focusedZonePos || (selectedZone ? { x: selectedZone.position.x, z: selectedZone.position.z } : null)}
             selectedQuadrant={selectedQuadrant}
             onQuadrantSelect={onQuadrantSelect}
+            showIrrigation={showIrrigation}
           />
           {selectedZone && (
             <ZonePopup zone={selectedZone} onClose={() => setSelectedZone(null)} />
@@ -959,6 +1143,15 @@ export default function FieldScene({
           DRONE MODE
         </span>
       </div>
+
+      {/* Grid drill navigation HUD */}
+      <GridDrillHUD />
+
+      {/* Irrigation overlay controls HUD */}
+      {showIrrigation && <IrrigationHUD />}
+
+      {/* Cell analysis panel — shows live engine data for selected grid cell */}
+      <CellAnalysisPanel />
 
       {/* Click hint */}
       <div style={{

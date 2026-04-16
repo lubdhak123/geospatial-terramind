@@ -563,6 +563,17 @@ export default function IrrigationPage() {
 
         <div className="flex-1" />
 
+        {/* View in 3D button */}
+        <button
+          onClick={() => {
+            try { sessionStorage.setItem('tm-show-irrigation', '1') } catch {}
+            router.push('/field')
+          }}
+          className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black text-white mr-2"
+          style={{ background: 'linear-gradient(135deg,#0ea5e9,#0369a1)', boxShadow: '0 4px 14px #0ea5e930' }}>
+          <Droplets size={13} /> View in 3D
+        </button>
+
         {/* Language toggle */}
         <div className="flex gap-1 rounded-lg p-1" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
           {(['en','hi'] as const).map(l => (

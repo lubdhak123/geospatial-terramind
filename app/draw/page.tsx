@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { Leaf, Trash2, MapPin, ChevronRight, X, Info } from 'lucide-react'
+import { Leaf, Trash2, MapPin, ChevronRight, X, Info, Loader2 } from 'lucide-react'
+import { usePipelineStore } from '@/lib/pipelineStore'
 
 // ── Types ─────────────────────────────────────────────────────────────
 type LatLng = [number, number] // [lat, lng]
@@ -184,9 +185,12 @@ function HintBanner({ points, closed }: { points: LatLng[]; closed: boolean }) {
 // ─────────────────────────────────────────────────────────────────────
 export default function DrawPage() {
   const router = useRouter()
+  const { setResult, setLoading, setError } = usePipelineStore()
 
-  const [points, setPoints] = useState<LatLng[]>([])
-  const [closed, setClosed]  = useState(false)
+  const [points,    setPoints]    = useState<LatLng[]>([])
+  const [closed,    setClosed]    = useState(false)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzeErr, setAnalyzeErr] = useState<string | null>(null)
 
   const area   = calculateArea(points)
   const center = calcCenter(points)
@@ -203,19 +207,49 @@ export default function DrawPage() {
   const clearAll = useCallback(() => {
     setPoints([])
     setClosed(false)
+    setAnalyzeErr(null)
   }, [])
 
-  const analyze = useCallback(() => {
-    if (!canAnalyze) return
+  const analyze = useCallback(async () => {
+    if (!canAnalyze || analyzing) return
+
     const payload = {
-      type: 'Polygon',
-      coordinates: [points.map(([lat, lng]) => [lng, lat])], // GeoJSON: [lng, lat]
+      type:        'Polygon' as const,
+      coordinates: [points.map(([lat, lng]) => [lng, lat] as [number, number])],
+      center:      center as [number, number],
       area_acres:  area,
-      center:      center,
     }
+
+    // Always store polygon for the field page header metadata
     localStorage.setItem('farm_polygon', JSON.stringify(payload))
-    router.push('/field')
-  }, [canAnalyze, points, area, center, router])
+
+    setAnalyzing(true)
+    setAnalyzeErr(null)
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/analyze-field', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+        throw new Error(err.error ?? `HTTP ${res.status}`)
+      }
+
+      const data = await res.json()
+      setResult({ ...data, center: center as [number, number], area_acres: area })
+      router.push('/field')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('[DrawPage] analyze failed:', msg)
+      setError(msg)
+      setAnalyzeErr(msg)
+      setAnalyzing(false)
+    }
+  }, [canAnalyze, analyzing, points, area, center, setResult, setLoading, setError, router])
 
   // Load leaflet CSS client-side only
   useEffect(() => {
@@ -346,15 +380,24 @@ export default function DrawPage() {
             {/* Analyze CTA */}
             <button
               onClick={analyze}
-              disabled={!canAnalyze}
+              disabled={!canAnalyze || analyzing}
               className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${
-                canAnalyze
+                canAnalyze && !analyzing
                   ? 'bg-gradient-to-r from-[#2a6fdb] to-[#1a4fa0] text-white shadow-lg shadow-blue-900/30 hover:from-[#3a7fea] hover:to-[#2359b8]'
                   : 'cursor-not-allowed bg-white/5 text-slate-600'
               }`}
             >
-              Analyze My Field
-              <ChevronRight size={15} />
+              {analyzing ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  Analyzing…
+                </>
+              ) : (
+                <>
+                  Analyze My Field
+                  <ChevronRight size={15} />
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -366,6 +409,15 @@ export default function DrawPage() {
               Center: {center[0].toFixed(5)}° N · {center[1].toFixed(5)}° E
               {' · '}Vertices: {points.length}
               {' · '}Area: {area} acres
+            </p>
+          </div>
+        )}
+
+        {/* Analysis error */}
+        {analyzeErr && (
+          <div className="border-t border-red-900/30 bg-red-950/20 px-4 py-1.5">
+            <p className="text-[10px] text-red-400">
+              ⚠ Analysis failed: {analyzeErr} — check your connection and try again.
             </p>
           </div>
         )}

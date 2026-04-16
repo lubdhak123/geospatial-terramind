@@ -8,12 +8,13 @@ import {
   AlertTriangle, Droplets, FileText, ChevronRight,
   PenTool, SplitSquareHorizontal, Radio, Cpu,
   Zap, CreditCard, FlaskConical, X,
-  MapPin, ChevronDown,
+  MapPin, ChevronDown, Grid3X3,
 } from 'lucide-react'
 import { fetchSentinelData, type SentinelResult } from '@/lib/sentinel'
 import { CROP_STAGES, type ActiveLayer, type WeatherConfig } from '@/components/3d/FieldScene'
 import { YIELD_ZONES } from '@/components/3d/CropInstances'
 import { MODULE_QUADRANT_MAP, type QuadrantId } from '@/lib/quadrantStore'
+import { usePipelineStore } from '@/lib/pipelineStore'
 
 // ── 3D scene (SSR-safe) ──────────────────────────────────────────────────
 const FieldScene = dynamic(() => import('@/components/3d/FieldScene'), {
@@ -393,24 +394,49 @@ function ModuleCard({ mod, active, onClick }: { mod: AIModule; active: boolean; 
 // ════════════════════════════════════════════════════════════════════════
 function DeepDiveButton({ mod }: { mod: AIModule }) {
   const router = useRouter()
+  const quadrantId = MODULE_QUADRANT_MAP[mod.id]
   return (
-    <button
-      onClick={() => router.push(mod.deepPage!)}
-      className="w-full flex items-center justify-between rounded-xl px-4 py-2.5 text-xs font-black tracking-widest transition-all hover:scale-[1.02] active:scale-100 shrink-0"
-      style={{
-        background: `linear-gradient(135deg, ${mod.color}18, ${mod.color}08)`,
-        border: `1px solid ${mod.color}50`,
-        color: mod.color,
-        boxShadow: `0 0 20px ${mod.color}12`,
-      }}>
-      <span className="flex items-center gap-2">
-        <span className="text-[10px]">🛰</span>
-        DEEP ANALYSIS
-      </span>
-      <span className="flex items-center gap-1 opacity-80">
-        Full Report <ChevronRight size={11} />
-      </span>
-    </button>
+    <div className="flex flex-col gap-2 shrink-0">
+      {/* Quadrant deep-dive if this module maps to a specific field zone */}
+      {quadrantId && (
+        <button
+          onClick={() => router.push(`/field/quadrant/${quadrantId.toLowerCase()}`)}
+          className="w-full flex items-center justify-between rounded-xl px-4 py-2.5 text-xs font-black tracking-widest transition-all hover:scale-[1.02] active:scale-100"
+          style={{
+            background: `linear-gradient(135deg, ${mod.color}22, ${mod.color}0a)`,
+            border: `1px solid ${mod.color}60`,
+            color: mod.color,
+            boxShadow: `0 0 20px ${mod.color}18`,
+          }}>
+          <span className="flex items-center gap-2">
+            <span className="text-[11px]">🗺</span>
+            OPEN {quadrantId} QUADRANT
+          </span>
+          <span className="flex items-center gap-1 opacity-80">
+            Full View <ChevronRight size={11} />
+          </span>
+        </button>
+      )}
+      {/* Module-specific deep page (irrigation / soil) */}
+      {mod.deepPage && (
+        <button
+          onClick={() => router.push(mod.deepPage!)}
+          className="w-full flex items-center justify-between rounded-xl px-4 py-2.5 text-xs font-black tracking-widest transition-all hover:scale-[1.02] active:scale-100"
+          style={{
+            background: `linear-gradient(135deg, ${mod.color}12, ${mod.color}06)`,
+            border: `1px solid ${mod.color}40`,
+            color: mod.color,
+          }}>
+          <span className="flex items-center gap-2">
+            <span className="text-[10px]">🛰</span>
+            DEEP ANALYSIS
+          </span>
+          <span className="flex items-center gap-1 opacity-80">
+            Full Report <ChevronRight size={11} />
+          </span>
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -588,6 +614,9 @@ function InsightPanel({
 export default function FieldPage() {
   const router = useRouter()
 
+  // Real pipeline result (set by /draw page after /api/analyze-field)
+  const pipelineResult = usePipelineStore(s => s.result)
+
   const [activeModule, setActiveModule]       = useState<AIModule>(MODULES[7]) // advisor default
   const [sentinelData, setSentinelData]       = useState<SentinelResult | null>(null)
   const [sentinelLoading, setSentinelLoading] = useState(false)
@@ -601,14 +630,26 @@ export default function FieldPage() {
   const [panelOpen, setPanelOpen]             = useState(true)
   const [polygon, setPolygon]                 = useState<{center:[number,number];area_acres:number;coordinates?:[number,number][][]} | null>(null)
   const [selectedQuadrant, setSelectedQuadrant] = useState<QuadrantId | null>(null)
+  const [showIrrigation, setShowIrrigation]   = useState(false)
 
   const compareRef  = useRef<HTMLDivElement>(null)
   const cropMonth   = MONTHS[monthIdx]
   const currentNDVI = MONTH_NDVI[cropMonth]
-  const isLive      = sentinelData?.is_live
+  // isLive = true if real Sentinel imagery loaded OR real pipeline ran
+  const isLive      = sentinelData?.is_live || pipelineResult?.is_live
 
   // Active layer driven by selected module
   const activeLayer = activeModule.layer
+
+  // Auto-enable irrigation overlay if navigated from irrigation page
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('tm-show-irrigation') === '1') {
+        setShowIrrigation(true)
+        sessionStorage.removeItem('tm-show-irrigation')
+      }
+    } catch {}
+  }, [])
 
   useEffect(() => {
     let lat = 10.787, lng = 79.139
@@ -640,6 +681,20 @@ export default function FieldPage() {
   const displayLng = polygon ? polygon.center[1].toFixed(4) : '79.1390'
   const displayLoc = polygon ? `${polygon.center[0].toFixed(3)}°N ${polygon.center[1].toFixed(3)}°E` : MOCK_FARM.location
   const displayArea = polygon ? `${polygon.area_acres} ac` : MOCK_FARM.area
+
+  // Real stats from pipeline (override MOCK_FARM when available)
+  const liveNdvi     = pipelineResult?.stats.avg_ndvi     ?? MOCK_FARM.ndvi_mean
+  const liveYield    = pipelineResult?.stats.avg_yield    != null
+                         ? `${pipelineResult.stats.avg_yield.toFixed(1)}q`
+                         : `${TOTAL_YIELD}q`
+  const liveMoisture = pipelineResult?.base.moisture_mean != null
+                         ? `${Math.round(pipelineResult.base.moisture_mean * 100)}%`
+                         : MOCK_FARM.moisture
+  const liveHealth   = pipelineResult?.stats.critical_cells != null
+                         ? Math.max(0, Math.round(100 - pipelineResult.stats.critical_cells * 5 - pipelineResult.stats.dry_cells * 2))
+                         : MOCK_FARM.health_score
+  // Real analyzed grid passed to TerrainScene (null = use built-in FIELD_GRID simulation)
+  const realGrid     = pipelineResult?.grid ?? null
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!compareDragging || !compareRef.current) return
@@ -715,6 +770,15 @@ export default function FieldPage() {
           <ArrowLeft size={14} className="text-slate-400" />
         </button>
 
+        <button
+          onClick={() => router.push('/grid')}
+          className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold text-emerald-400 hover:text-white transition-all"
+          style={{ border: '1px solid rgba(34,197,94,0.25)', background: 'rgba(34,197,94,0.06)' }}
+        >
+          <Grid3X3 size={11} />
+          Grid View
+        </button>
+
         {/* Brand */}
         <div className="flex items-center gap-2">
           <div className="relative flex h-7 w-7 items-center justify-center rounded-lg" style={{ background:'linear-gradient(135deg,#2a6fdb,#1a3f8a)', boxShadow:'0 0 14px #2a6fdb35' }}>
@@ -727,10 +791,23 @@ export default function FieldPage() {
           </div>
         </div>
 
+        {/* ── Irrigation overlay toggle — always visible ── */}
+        <button onClick={() => setShowIrrigation(v => !v)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black transition-all"
+          style={showIrrigation
+            ? { background:'#0ea5e920', border:'1px solid #0ea5e960', color:'#38bdf8', boxShadow:'0 0 10px #0ea5e925' }
+            : { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.10)', color:'#64748b' }
+          }>
+          <Droplets size={12} />
+          Irrigation
+        </button>
+
         {/* Satellite status */}
         <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)' }}>
           <div className={`h-1.5 w-1.5 rounded-full ${sentinelLoading ? 'bg-amber-400 animate-pulse' : isLive ? 'bg-emerald-400' : 'bg-slate-600'}`} style={isLive ? { boxShadow:'0 0 5px #22c55e' } : {}} />
-          <span className="font-mono text-[9px] text-slate-400">{sentinelLoading ? 'SCANNING…' : isLive ? `SAT·${sentinelData?.capture_date}` : 'DEMO'}</span>
+          <span className="font-mono text-[9px] text-slate-400">
+            {sentinelLoading ? 'SCANNING…' : pipelineResult?.is_live ? `LIVE·${pipelineResult.capture_date}·${realGrid?.[0]?.length ?? 0}×${realGrid?.length ?? 0}` : isLive ? `SAT·${sentinelData?.capture_date}` : 'DEMO'}
+          </span>
         </div>
 
         {/* Weather */}
@@ -821,6 +898,7 @@ export default function FieldPage() {
                     setPanelOpen(true)
                   }
                 }}
+                showIrrigation={showIrrigation}
               />
           </div>
 
@@ -903,10 +981,10 @@ export default function FieldPage() {
             {/* Health summary strip */}
             <div className="flex items-center gap-3 px-4 py-3 shrink-0"
               style={{ borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
-              <HealthRing score={MOCK_FARM.health_score} />
+              <HealthRing score={liveHealth} />
               <div className="flex-1 min-w-0">
                 <div className="text-[9px] text-slate-600 uppercase tracking-widest font-bold">Field Health</div>
-                <div className="text-sm font-black text-white">{MOCK_FARM.health_score}<span className="text-slate-600 text-xs font-normal">/100</span></div>
+                <div className="text-sm font-black text-white">{liveHealth}<span className="text-slate-600 text-xs font-normal">/100</span></div>
                 <div className="text-[10px] text-slate-500 truncate">{MOCK_FARM.crop} · {displayArea}</div>
               </div>
               <div className="flex flex-col gap-1 shrink-0">
@@ -962,7 +1040,7 @@ export default function FieldPage() {
 
           {/* Health */}
           <div className="flex items-center gap-2 px-3 shrink-0">
-            <HealthRing score={MOCK_FARM.health_score} />
+            <HealthRing score={liveHealth} />
             <div>
               <div className="text-[9px] text-slate-600 uppercase tracking-widest font-bold">Health</div>
               <div className="text-sm font-black text-white">{MOCK_FARM.health_score}/100</div>
@@ -973,11 +1051,11 @@ export default function FieldPage() {
           <div className="flex flex-col justify-center px-4 shrink-0 min-w-[140px]">
             <div className="flex justify-between mb-1">
               <span className="text-[9px] text-slate-600 uppercase tracking-widest font-bold">NDVI · {cropMonth}</span>
-              <span className="font-mono text-[10px] font-bold" style={{ color: currentNDVI > 0.6 ? '#22c55e' : currentNDVI > 0.4 ? '#eab308' : '#ef4444' }}>{currentNDVI.toFixed(2)}</span>
+              <span className="font-mono text-[10px] font-bold" style={{ color: liveNdvi > 0.6 ? '#22c55e' : liveNdvi > 0.4 ? '#eab308' : '#ef4444' }}>{liveNdvi.toFixed(2)}</span>
             </div>
             <div className="relative h-1.5 rounded-full overflow-hidden bg-white/5">
               <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
-                style={{ width:`${currentNDVI*100}%`, background:'linear-gradient(90deg,#ef4444 0%,#eab308 40%,#22c55e 100%)' }} />
+                style={{ width:`${liveNdvi*100}%`, background:'linear-gradient(90deg,#ef4444 0%,#eab308 40%,#22c55e 100%)' }} />
             </div>
           </div>
 
@@ -1000,11 +1078,11 @@ export default function FieldPage() {
             />
           </div>
 
-          {/* Quick stats */}
+          {/* Quick stats — real pipeline values when available */}
           {[
             { label:'Disease', value:MOCK_FARM.disease_risk, color: MOCK_FARM.disease_risk==='Low'?'#22c55e':MOCK_FARM.disease_risk==='Medium'?'#eab308':'#ef4444' },
-            { label:'Moisture',value:MOCK_FARM.moisture,     color:'#3b82f6'  },
-            { label:'Yield Est',value:`${TOTAL_YIELD}q`,     color:'#a78bfa'  },
+            { label:'Moisture',value:liveMoisture,           color:'#3b82f6'  },
+            { label:'Yield Est',value:liveYield,             color:'#a78bfa'  },
             { label:'Income',   value:`₹${YIELD_INCOME}L`,   color:'#22c55e'  },
           ].map(s => (
             <div key={s.label} className="flex flex-col items-center px-3 shrink-0">
