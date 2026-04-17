@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import datetime
+import plotly.graph_objects as go
 # --- UI CONFIGURATION ---
 st.set_page_config(
     page_title="TerraMind",
@@ -249,6 +250,115 @@ if page == "Field Health":
         unsafe_allow_html=True
     )
     
+    # 2.5 3D FIELD HEALTH VISUALIZATION
+    st.markdown("<div style='margin-top: 40px;'></div>", unsafe_allow_html=True)
+    st.markdown("<h2 class='fade-in-el' style='animation-delay: 0.35s; color:#f0f2f6; margin-bottom: 5px; font-weight: 900; font-size: 2.2rem; text-align: center;'>3D Field Health Visualization</h2>", unsafe_allow_html=True)
+    st.markdown("<p class='fade-in-el' style='animation-delay: 0.4s; color:#b0b8c1; text-align: center; margin-bottom: 25px; font-size: 1.05rem;'>Interactive Digital Twin • Rotate & Hover for NDVI Status</p>", unsafe_allow_html=True)
+    
+    st.markdown("""
+    <style>
+    div[data-testid="stPlotlyChart"] {
+        background: rgba(18,18,18,0.65) !important;
+        border: 1px solid rgba(0,200,83,0.15) !important;
+        border-radius: 16px !important;
+        padding: 5px !important;
+        box-shadow: 0 8px 32px rgba(0,200,83,0.1) !important;
+        transition: transform 0.4s ease, box-shadow 0.4s ease !important;
+        width: 100% !important;
+        margin-bottom: 30px !important;
+        animation: fadeIn 1s ease-in-out;
+    }
+    div[data-testid="stPlotlyChart"]:hover {
+        transform: translateY(-6px) !important;
+        box-shadow: 0 15px 40px rgba(0, 200, 83, 0.25) !important;
+    }
+    @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(15px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Simulate 50x50 terrain grid
+    geo_res = 50
+    x_val = np.linspace(0, 100, geo_res)
+    y_val = np.linspace(0, 100, geo_res)
+    X, Y = np.meshgrid(x_val, y_val)
+    
+    # Simulate central healthy area, stressed edges
+    R = np.sqrt((X-50)**2 + (Y-50)**2)
+    NDVI_base = np.clip(0.95 - (R / 65.0)**2, 0.1, 0.95)
+    np.random.seed(42) # Consistent look
+    NDVI_sim = NDVI_base + np.random.normal(0, 0.04, X.shape)
+    NDVI_sim = np.clip(NDVI_sim, 0.1, 0.95)
+    
+    # Add slight elevation variation (Z-axis) to give terrain feel
+    Z = 2 * np.sin(X/8) + 2 * np.cos(Y/8) + 8 * NDVI_sim
+    
+    # Health status with color coding
+    health_status = np.where(NDVI_sim > 0.7, '<span style="color:#00fa9a">Healthy</span>', 
+                             np.where(NDVI_sim > 0.4, '<span style="color:#ffd700">Moderate</span>', 
+                                      '<span style="color:#ff4d4f">Critical</span>'))
+    
+    # Simulate nitrogen and moisture levels
+    nitrogen = np.clip(NDVI_sim * 90 + np.random.normal(0, 5, X.shape), 30, 95).astype(int)
+    moisture = np.clip((NDVI_sim * 0.4 + 0.4) * 100 + np.random.normal(0, 5, X.shape), 40, 85).astype(int)
+    
+    # Store these values in a customdata array
+    customdata = np.stack((NDVI_sim, health_status, nitrogen, moisture), axis=-1)
+        
+    fig = go.Figure(data=[go.Surface(
+        z=Z,
+        surfacecolor=NDVI_sim,
+        colorscale=[
+            [0.0, 'rgb(255, 77, 79)'],   # Poor (Red)
+            [0.5, 'rgb(255, 215, 0)'],   # Moderate (Yellow)
+            [1.0, 'rgb(0, 200, 83)']     # Healthy (Green)
+        ],
+        cmin=0.2,
+        cmax=0.9,
+        customdata=customdata,
+        hovertemplate=(
+            "<b>🌱 NDVI:</b> %{customdata[0]:.2f}<br>" +
+            "<b>📊 Health:</b> %{customdata[1]}<br>" +
+            "<b>🧪 Nitrogen:</b> %{customdata[2]}%<br>" +
+            "<b>💧 Moisture:</b> %{customdata[3]}%<extra></extra>"
+        ),
+        colorbar=dict(
+            title=dict(
+                text="Crop Health",
+                side="right",
+                font=dict(color="#b0b8c1", size=14)
+            ),
+            thickness=12,
+            len=0.7,
+            tickfont=dict(color="#b0b8c1"),
+            xpad=20
+        ),
+        lighting=dict(ambient=0.6, diffuse=0.8, roughness=0.5, specular=0.5, fresnel=0.2)
+    )])
+    
+    fig.update_layout(
+        scene=dict(
+            xaxis=dict(showbackground=False, showgrid=False, zeroline=False, showticklabels=False, title=''),
+            yaxis=dict(showbackground=False, showgrid=False, zeroline=False, showticklabels=False, title=''),
+            zaxis=dict(showbackground=False, showgrid=False, zeroline=False, showticklabels=False, title=''),
+            camera=dict(
+                up=dict(x=0, y=0, z=1),
+                center=dict(x=0, y=0, z=-0.05),
+                eye=dict(x=1.3, y=1.3, z=1.0)
+            )
+        ),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=10, r=10, b=10, t=10),
+        height=450,
+    )
+    
+    c_pad1, c_chart, c_pad2 = st.columns([0.075, 0.85, 0.075])
+    with c_chart:
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+
     # 3. MAIN CARDS
     c_left, c_right = st.columns(2)
     
