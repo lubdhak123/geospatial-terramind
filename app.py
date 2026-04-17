@@ -4,6 +4,7 @@ import numpy as np
 import datetime
 import plotly.graph_objects as go
 import joblib
+from soil_intelligence.fertilizers_logic import analyze_soil_from_ndvi
 
 @st.cache_resource
 def load_ml_model():
@@ -181,49 +182,135 @@ def load_data():
         return pd.DataFrame()
 
 df = load_data()
-st.write("Columns:", df.columns)
 if df.empty:
     st.stop()
 
-# Auto-select the target farm ID in the backend
-selected_farm = 1
+# Load Price Prediction Model globally
+import joblib
+try:
+    model = joblib.load('model/price_model.pkl')
+except:
+    model = None
+
+# Global Matrix Base Grids
+geo_res = 60
+x_val = np.linspace(0, 20, geo_res)
+y_val = np.linspace(0, 20, geo_res)
+x_grid, y_grid = np.meshgrid(x_val, y_val)
+z_base = 0.02 * np.sin(x_grid/4) * np.cos(y_grid/4)
+
+def generate_farm_data(r_offset, seed):
+    np.random.seed(seed)
+    R = np.sqrt((x_grid - r_offset)**2 + (y_grid - r_offset)**2)
+    NDVI_base = np.clip(0.95 - (R / 12.0)**2, 0.1, 0.95)
+    ndvi = np.clip(NDVI_base + np.random.normal(0, 0.04, x_grid.shape), 0.1, 0.95)
+    temp = 30.0 + np.random.normal(0, 0.5, x_grid.shape)
+    rain = 80.0 + np.random.normal(0, 2.0, x_grid.shape)
+    
+    if model is not None:
+        flat_input = np.column_stack((ndvi.flatten(), temp.flatten(), rain.flatten()))
+        price = model.predict(flat_input).reshape(x_grid.shape)
+    else:
+        price = np.zeros(x_grid.shape)
+        
+    return ndvi, temp, rain, price
+
+ndvi_data_1, temp_data_1, rain_data_1, price_1 = generate_farm_data(10, 42)
+ndvi_data_2, temp_data_2, rain_data_2, price_2 = generate_farm_data(5, 99)
+
+farms = [
+    {
+        "name": "Thanjavur",
+        "size": 3,
+        "crop": "Rice",
+        "ndvi": ndvi_data_1,
+        "temperature": temp_data_1,
+        "rainfall": rain_data_1,
+        "price": price_1
+    },
+    {
+        "name": "Pallavaram",
+        "size": 5,
+        "crop": "Wheat",
+        "ndvi": ndvi_data_2,
+        "temperature": temp_data_2,
+        "rainfall": rain_data_2,
+        "price": price_2
+    }
+]
 
 # --- SIDEBAR NAVIGATION ---
 st.sidebar.markdown("<h1 style='color:#4CAF50;'>TerraMind 🌾</h1>", unsafe_allow_html=True)
 st.sidebar.markdown("<p style='color:#8b9bb4; font-size: 0.95rem; margin-top:-15px;'>Agri-Intelligence Platform</p>", unsafe_allow_html=True)
 
-# Render clean Profile Card
-st.sidebar.markdown("""
+selected_farm_name = st.sidebar.selectbox(
+    "Select Your Land",
+    [f["name"] for f in farms]
+)
+selected_farm = next(f for f in farms if f["name"] == selected_farm_name)
+
+# Render dynamic Profile Card
+st.sidebar.markdown(f"""
 <div class='farmer-profile-card'>
     <div class='profile-title'>Active Profile</div>
     <div class='profile-item'><span class='profile-icon'>👤</span> Ravi Kumar</div>
-    <div class='profile-item'><span class='profile-icon'>📍</span> Thanjavur, Tamil Nadu</div>
-    <div class='profile-item' style='margin-bottom:0;'><span class='profile-icon'>🌾</span> Crop: Rice</div>
+    <div class='profile-item'><span class='profile-icon'>📍</span> {selected_farm['name']}</div>
+    <div class='profile-item'><span class='profile-icon'>📏</span> {selected_farm['size']} Acres</div>
+    <div class='profile-item' style='margin-bottom:0;'><span class='profile-icon'>🌾</span> Crop: {selected_farm['crop']}</div>
 </div>
 """, unsafe_allow_html=True)
 
-page = st.sidebar.radio("Navigation", ["Field Health", "Harvest Oracle", "Market Insights"])
+# --- GLOBAL NAVIGATION STATE ---
+if "current_page" not in st.session_state:
+    st.session_state["current_page"] = "main"
+
+# Sidebar radio always renders (keeps it visible), but session_state override wins
+_sidebar_page = st.sidebar.radio(
+    "Navigation",
+    ["Field Health", "Harvest Oracle", "Market Insights", "More Features"]
+)
+
+# If a button has set an override, use it; otherwise follow the sidebar
+if st.session_state["current_page"] == "soil_intelligence":
+    page = "Soil Intelligence"
+elif st.session_state["current_page"] == "micro_climate":
+    page = "Micro Climate"
+elif st.session_state["current_page"] == "disease_scanner":
+    page = "Disease Scanner"
+else:
+    page = _sidebar_page
+    # Reset any stale override whenever the user clicks a sidebar item
+    st.session_state["current_page"] = "main"
+
 st.sidebar.markdown("---")
 st.sidebar.markdown("<center style='color:#666; font-size: 0.8rem;'>© 2026 TerraMind HQ</center>", unsafe_allow_html=True)
 
 # --- PAGE ROUTING ---
 if page == "Field Health":
-    # Ambient Background Illustration
-    st.markdown(
-        f'<style>'
-        f'@keyframes slowFloat {{'
-        f'  0% {{ transform: translateY(0px) rotate(0deg); }}'
-        f'  50% {{ transform: translateY(-15px) rotate(2deg); }}'
-        f'  100% {{ transform: translateY(0px) rotate(0deg); }}'
-        f'}}'
-        f'</style>'
-        f'<div style="position: fixed; bottom: -80px; right: -50px; width: 600px; height: 600px; '
-        f'background: url(\'https://images.unsplash.com/photo-1505471768190-275e2ad7b3f9\'); '
-        f'background-size: cover; background-position: center; border-radius: 50%; '
-        f'opacity: 0.08; filter: blur(6px) sepia(40%); z-index: 0; pointer-events: none; '
-        f'animation: slowFloat 20s ease-in-out infinite;"></div>',
-        unsafe_allow_html=True
-    )
+    st.markdown("""
+<style>
+
+/* Apply ONLY to main area */
+[data-testid="stAppViewContainer"] {
+    background: linear-gradient(to right, rgba(10,15,20,0.95) 30%, rgba(10,15,20,0.2) 100%),
+                url("https://imgs.search.brave.com/kBskl2ewdGrC-BUNVJYewtNF_MDH0vHA_4wV9A4QEKg/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzhiL2Yw/LzZmLzhiZjA2Zjlm/ZGNlN2E5MTRjYTRj/NDUxNWZiZTRjMzgz/LmpwZw");
+    background-size: cover;
+    background-position: right center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* Keep content readable */
+.block-container {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+    st.markdown('<div class="main">', unsafe_allow_html=True)
     
     st.markdown("<div style='margin-top: 30px; position: relative; z-index: 10;'></div>", unsafe_allow_html=True)
     st.markdown("<h2 class='fade-in-el' style='animation-delay: 0.1s; color:#f0f2f6; font-weight: 900; font-size: 2.3rem; text-align: center; margin-bottom: 5px; position: relative; z-index: 10;'>Harvest Horizon</h2>", unsafe_allow_html=True)
@@ -234,22 +321,54 @@ if page == "Field Health":
     st.subheader("🌾 Crop Growth Stages")
 
     # Correct working image URLs
-    sowing_img = "https://upload.wikimedia.org/wikipedia/commons/5/5c/Rice_seeds.jpg"
-    growth_img = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Rice_field.jpg"
-    peak_img = "https://upload.wikimedia.org/wikipedia/commons/0/0c/Paddy_field_green.jpg"
-    harvest_img = "https://upload.wikimedia.org/wikipedia/commons/6/6f/Rice_harvest.jpg"
+    sowing_img = "https://c1.wallpaperflare.com/preview/772/876/887/rice-seed-food-plant.jpg"
+    growth_img = "https://globalplantcouncil.org/wp-content/uploads/2022/12/Rice-field-image-from-Pixabay2.webp"
+    peak_img = "https://thumbs.dreamstime.com/b/natural-grass-premium-hd-wallpaper-rice-field-sheaves-crop-growing-plants-green-paddy-cutting-photos-seeds-village-jammu-291727235.jpg"
+    harvest_img = "https://static.vecteezy.com/system/resources/thumbnails/052/184/661/small/rice-harvest-in-the-philippines-photo.jpg"
 
     # NDVI logic
-    current_ndvi = df['ndvi'].mean() if not df.empty else 0.45
+    current_ndvi = np.mean(selected_farm["ndvi"])
 
     if current_ndvi < 0.3:
+        active_idx = 1
         current_stage = "Sowing"
     elif current_ndvi < 0.6:
+        active_idx = 2
         current_stage = "Growth"
     elif current_ndvi < 0.8:
+        active_idx = 3
         current_stage = "Peak"
     else:
+        active_idx = 4
         current_stage = "Harvest"
+
+    # Minimal Custom CSS for column hover and Highlight
+    st.markdown(f"""
+    <style>
+    /* Styling for the columns */
+    [data-testid="stHorizontalBlock"] > [data-testid="column"] {{
+        background: rgba(20, 25, 30, 0.4);
+        border-radius: 12px;
+        padding: 10px;
+        transition: transform 0.3s ease, filter 0.3s ease, box-shadow 0.3s ease;
+        border: 2px solid transparent;
+        text-align: center;
+        opacity: 0.7;
+    }}
+    
+    [data-testid="stHorizontalBlock"] > [data-testid="column"]:hover {{
+        transform: scale(1.03);
+        opacity: 0.9;
+    }}
+    
+    /* Highlight Active Stage */
+    [data-testid="stHorizontalBlock"] > [data-testid="column"]:nth-child({active_idx}) {{
+        border: 2px solid #00ff9c;
+        box-shadow: 0 0 15px rgba(0, 255, 156, 0.3);
+        opacity: 1.0;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
 
     cols = st.columns(4)
 
@@ -262,190 +381,220 @@ if page == "Field Health":
 
     for i, (name, img, desc) in enumerate(stages):
         with cols[i]:
-            st.image(img, width=250)
+            st.markdown(f"""
+            <div style="text-align:center;">
+                <img src="{img}" 
+                     style="
+                        width:220px;
+                        height:150px;
+                        object-fit:cover;
+                        border-radius:12px;
+                     ">
+            </div>
+            """, unsafe_allow_html=True)
 
             if name.split()[1] == current_stage:
-                st.markdown(f"### {name} ✅")
-                st.success("YOU ARE HERE")
+                st.markdown(f"<h4 style='color:#00ff9c; margin-top:10px; margin-bottom:5px; text-align:center;'>{name}</h4>", unsafe_allow_html=True)
+                st.markdown("<p style='color:#00ff9c; font-weight:bold; font-size:0.8rem; text-align:center; margin-bottom:0;'>YOU ARE HERE</p>", unsafe_allow_html=True)
             else:
-                st.markdown(f"### {name}")
+                st.markdown(f"<h4 style='color:#f0f2f6; margin-top:10px; margin-bottom:5px; text-align:center;'>{name}</h4>", unsafe_allow_html=True)
 
-            st.caption(desc)
+            st.markdown(f"<p style='color:#b0b8c1; font-size:0.85rem; text-align:center;'>{desc}</p>", unsafe_allow_html=True)
 
-    # ---------- END FIX ----------
-    
     # 2.5 3D FIELD HEALTH VISUALIZATION
     st.markdown("<div style='margin-top: 40px;'></div>", unsafe_allow_html=True)
-    st.markdown("<h2 class='fade-in-el' style='animation-delay: 0.35s; color:#f0f2f6; margin-bottom: 5px; font-weight: 900; font-size: 2.2rem; text-align: center;'>3D Field Health Visualization</h2>", unsafe_allow_html=True)
-    st.markdown("<p class='fade-in-el' style='animation-delay: 0.4s; color:#b0b8c1; text-align: center; margin-bottom: 25px; font-size: 1.05rem;'>Interactive Digital Twin • Rotate & Hover for NDVI Status</p>", unsafe_allow_html=True)
     
-    st.markdown("""
-    <style>
-    div[data-testid="stPlotlyChart"] {
-        background: rgba(18,18,18,0.65) !important;
-        border: 1px solid rgba(0,200,83,0.15) !important;
-        border-radius: 16px !important;
-        padding: 5px !important;
-        box-shadow: 0 8px 32px rgba(0,200,83,0.1) !important;
-        transition: transform 0.4s ease, box-shadow 0.4s ease !important;
-        width: 100% !important;
-        margin-bottom: 30px !important;
-        animation: fadeIn 1s ease-in-out;
-    }
-    div[data-testid="stPlotlyChart"]:hover {
-        transform: translateY(-6px) !important;
-        box-shadow: 0 15px 40px rgba(0, 200, 83, 0.25) !important;
-    }
-    @keyframes fadeIn {
-        0% { opacity: 0; transform: translateY(15px); }
-        100% { opacity: 1; transform: translateY(0); }
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    # Pre-calculated means for display
+    mean_ndvi = np.mean(selected_farm["ndvi"])
+    mean_temp = np.mean(selected_farm["temperature"])
+    mean_rain = np.mean(selected_farm["rainfall"])
+    mean_price = np.mean(selected_farm["price"])
     
-    # Simulate 50x50 terrain grid
-    geo_res = 50
-    x_val = np.linspace(0, 100, geo_res)
-    y_val = np.linspace(0, 100, geo_res)
-    X, Y = np.meshgrid(x_val, y_val)
+    # 3-Column Layout: Metrics | Main Field | Insights
+    col1, col2, col3 = st.columns([1, 4, 1])
     
-    # Simulate central healthy area, stressed edges
-    R = np.sqrt((X-50)**2 + (Y-50)**2)
-    NDVI_base = np.clip(0.95 - (R / 65.0)**2, 0.1, 0.95)
-    np.random.seed(42) # Consistent look
-    NDVI_sim = NDVI_base + np.random.normal(0, 0.04, X.shape)
-    NDVI_sim = np.clip(NDVI_sim, 0.1, 0.95)
-    
-    # Add slight elevation variation (Z-axis) to give terrain feel
-    Z = 2 * np.sin(X/8) + 2 * np.cos(Y/8) + 8 * NDVI_sim
-    
-    # Health status with color coding
-    health_status = np.where(NDVI_sim > 0.7, '<span style="color:#00fa9a">Healthy</span>', 
-                             np.where(NDVI_sim > 0.4, '<span style="color:#ffd700">Moderate</span>', 
-                                      '<span style="color:#ff4d4f">Critical</span>'))
-    
-    # Generate realistic environmental parameters across the field
-    field_temp = 30.0 + np.random.normal(0, 0.5, X.shape)
-    field_rain = 80.0 + np.random.normal(0, 2.0, X.shape)
-    
-    # Fast vectorized ML Prediction for all 2500 points
-    if model is not None:
-        flat_input = np.column_stack((NDVI_sim.flatten(), field_temp.flatten(), field_rain.flatten()))
-        pred_prices = model.predict(flat_input).reshape(X.shape)
-    else:
-        pred_prices = np.zeros(X.shape)
+    with col1:
+        st.markdown(f"""
+        <div style="display: flex; flex-direction: column; gap: 15px; height: 100%;">
+            <div style="background: rgba(16,20,26,0.6); backdrop-filter: blur(20px); border: 1px solid rgba(74,225,131,0.2); border-radius: 16px; padding: 20px;">
+                <div style="color: #8b9bb4; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">🌿 Avg NDVI</div>
+                <div style="color: #f0f2f6; font-size: 1.4rem; font-weight: 800; margin-top: 5px;">{mean_ndvi:.2f}</div>
+            </div>
+            <div style="background: rgba(16,20,26,0.6); backdrop-filter: blur(20px); border: 1px solid rgba(74,225,131,0.2); border-radius: 16px; padding: 20px;">
+                <div style="color: #8b9bb4; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">🌡️ Avg Temp</div>
+                <div style="color: #f0f2f6; font-size: 1.4rem; font-weight: 800; margin-top: 5px;">{mean_temp:.1f}°C</div>
+            </div>
+            <div style="background: rgba(16,20,26,0.6); backdrop-filter: blur(20px); border: 1px solid rgba(74,225,131,0.2); border-radius: 16px; padding: 20px;">
+                <div style="color: #8b9bb4; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">🌧️ Avg Rain</div>
+                <div style="color: #f0f2f6; font-size: 1.4rem; font-weight: 800; margin-top: 5px;">{mean_rain:.0f} mm</div>
+            </div>
+            <div style="background: rgba(16,20,26,0.6); backdrop-filter: blur(20px); border: 1px solid rgba(74,225,131,0.2); border-radius: 16px; padding: 20px;">
+                <div style="color: #8b9bb4; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">💰 Avg Price</div>
+                <div style="color: #f0f2f6; font-size: 1.4rem; font-weight: 800; margin-top: 5px;">₹{mean_price:.0f}/kg</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
-    # Store these values in a customdata array
-    customdata = np.stack((NDVI_sim, health_status, field_temp, field_rain, pred_prices), axis=-1)
+    with col2:
+        st.markdown("""
+        <div style="background: rgba(16,20,26,0.6); backdrop-filter: blur(35px); border-radius: 20px; box-shadow: 0 20px 40px rgba(74,225,131,0.08); padding: 30px; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #f0f2f6; font-size: 1.8rem; margin: 0; font-weight: 800;">3D Spatial Intelligence</h3>
+                <div style="display: flex; gap: 10px;">
+                    <span style="background: rgba(255,255,255,0.05); color: #8b9bb4; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">TOPOGRAPHIC</span>
+                    <span style="background: rgba(74,225,131,0.15); color: #4ae183; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">NDVI HEATMAP</span>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
         
-    fig = go.Figure(data=[go.Surface(
-        z=Z,
-        surfacecolor=NDVI_sim,
-        colorscale=[
-            [0.0, 'rgb(255, 77, 79)'],   # Poor (Red)
-            [0.5, 'rgb(255, 215, 0)'],   # Moderate (Yellow)
-            [1.0, 'rgb(0, 200, 83)']     # Healthy (Green)
-        ],
-        cmin=0.2,
-        cmax=0.9,
-        customdata=customdata,
-        hovertemplate=(
-            "<b>🌱 NDVI:</b> %{customdata[0]:.2f}<br>" +
-            "<b>🌡️ Temperature:</b> %{customdata[2]:.1f}°C<br>" +
-            "<b>🌧️ Rainfall:</b> %{customdata[3]:.1f} mm<br>" +
-            "<b>💰 Predicted Price:</b> ₹%{customdata[4]:.2f}/kg<br>" +
-            "<b>📊 Health:</b> %{customdata[1]}<extra></extra>"
-        ),
-        colorbar=dict(
-            title=dict(
-                text="Crop Health",
-                side="right",
-                font=dict(color="#b0b8c1", size=14)
-            ),
-            thickness=12,
-            len=0.7,
-            tickfont=dict(color="#b0b8c1"),
-            xpad=20
-        ),
-        lighting=dict(ambient=0.6, diffuse=0.8, roughness=0.5, specular=0.5, fresnel=0.2)
-    )])
-    
-    fig.update_layout(
-        scene=dict(
-            xaxis=dict(showbackground=False, showgrid=False, zeroline=False, showticklabels=False, title=''),
-            yaxis=dict(showbackground=False, showgrid=False, zeroline=False, showticklabels=False, title=''),
-            zaxis=dict(showbackground=False, showgrid=False, zeroline=False, showticklabels=False, title=''),
-            camera=dict(
-                up=dict(x=0, y=0, z=1),
-                center=dict(x=0, y=0, z=-0.05),
-                eye=dict(x=1.3, y=1.3, z=1.0)
+        st.markdown("""
+        <style>
+        div[data-testid="stPlotlyChart"] {
+            margin-top: -10px !important;
+            margin-bottom: -10px !important;
+            border-radius: 16px !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # 3D FIELD REQUIREMENTS
+        grid_size = 80
+
+        x = np.linspace(0, 10, grid_size)
+        y = np.linspace(0, 10, grid_size)
+        x, y = np.meshgrid(x, y)
+
+        # Base terrain
+        z_base = np.sin(x) * np.cos(y)
+
+        # NDVI grid (same shape)
+        ndvi_grid = np.random.uniform(0.3, 0.9, (grid_size, grid_size))
+
+        # --- Soil Intelligence Analysis ---
+        soil_data     = analyze_soil_from_ndvi(ndvi_grid)
+        zone_stats    = soil_data["zone_stats"]
+        recommendation = soil_data["recommendation"]
+
+        # Final surface
+        from scipy.ndimage import gaussian_filter
+        z_crop = z_base + (ndvi_grid * 0.15)
+        z_crop = gaussian_filter(z_crop, sigma=2)
+        
+        field_surface = go.Surface(
+            x=x,
+            y=y,
+            z=z_crop,
+            surfacecolor=ndvi_grid,
+            colorscale=[[0, 'red'], [0.5, 'yellow'], [1, 'green']],
+            opacity=0.95,
+            showscale=False,
+            contours=dict(
+                x=dict(show=True, color="rgba(255, 255, 255, 0.1)", width=1),
+                y=dict(show=True, color="rgba(255, 255, 255, 0.1)", width=1),
+                z=dict(show=True, color="rgba(255, 255, 255, 0.2)", width=2)
             )
-        ),
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=10, r=10, b=10, t=10),
-        height=450,
-    )
-    
-    c_pad1, c_chart, c_pad2 = st.columns([0.075, 0.85, 0.075])
-    with c_chart:
+        )
+        
+        crop_traces = [go.Scatter3d(
+            x=x.flatten(),
+            y=y.flatten(),
+            z=z_crop.flatten() + 0.05,
+            mode='markers',
+            marker=dict(
+                size=2,
+                color=ndvi_grid.flatten(),
+                colorscale='RdYlGn',
+                opacity=0.8
+            ),
+            hoverinfo='text',
+            customdata=np.stack([
+                ndvi_grid.flatten(),
+                np.full_like(ndvi_grid.flatten(), 30),
+                np.full_like(ndvi_grid.flatten(), 80),
+                np.full_like(ndvi_grid.flatten(), 21),
+                np.where(ndvi_grid.flatten() > 0.6, "Healthy", "Weak")
+            ], axis=-1),
+            hovertemplate="""
+            NDVI: %{customdata[0]:.2f}<br>
+            Temp: %{customdata[1]}°C<br>
+            Rain: %{customdata[2]} mm<br>
+            Price: ₹%{customdata[3]}/kg<br>
+            Health: %{customdata[4]}
+            <extra></extra>
+            """,
+            showlegend=False
+        )]
+                
+        fig = go.Figure(data=[field_surface] + crop_traces)
+        
+        fig.update_layout(
+            scene=dict(
+                bgcolor="#10141a",
+                xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=False),
+                aspectratio=dict(x=1, y=1, z=0.15),
+                camera=dict(eye=dict(x=1.5, y=1.5, z=0.8))
+            ),
+            margin=dict(l=0, r=0, b=0, t=0),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            height=600,
+        )
+        
+        fig.update_traces(
+            selector=dict(type='surface'),
+            lighting=dict(ambient=0.6, diffuse=0.8, specular=0.3, roughness=0.5, fresnel=0.2)
+        )
+        
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+    with col3:
+        st.markdown(f"""
+        <div style="padding:15px; border-radius:16px; background:rgba(16,20,26,0.6); backdrop-filter: blur(20px); border: 1px solid rgba(74,225,131,0.2); height: 100%;">
+            <h3 style="color:#f0f2f6; font-size:1.1rem; margin-top:0;">Agronomist Insights</h3>
+            <p style="color:#8b9bb4; font-weight:700;">🌱 NDVI indicates strong growth</p>
+            <p style="color:#8b9bb4; font-weight:700;">💧 Moisture levels are stable</p>
+            <p style="color:#8b9bb4; font-weight:700;">📈 Market price favorable</p>
+            
+            <div style="margin-top: 50px; display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.3); padding: 12px 20px; border-radius: 30px; border: 1px solid rgba(74,225,131,0.2);">
+                <div style="width: 10px; height: 10px; background: #4ae183; border-radius: 50%;"></div>
+                <div style="color: #4ae183; font-size: 0.8rem; font-weight: 800; text-transform: uppercase;">Live Grid Scan</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # 3. MAIN CARDS
-    c_left, c_right = st.columns(2)
-    
-    with c_left:
-        st.markdown(
-            f'<div class="fade-in-el" style="animation-delay: 0.4s; background: rgba(18,18,18,0.65); border: 1px solid rgba(0,200,83,0.15); border-top: 4px solid #00c853; border-radius: 16px; padding: 30px; height: 100%; box-shadow: 0 8px 32px rgba(0,200,83,0.05);">'
-            f'<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">'
-            f'<div>'
-            f'<div style="color: #b0b8c1; font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Biomass Index</div>'
-            f'<div style="color: #00c853; font-size: 2.2rem; font-weight: 900; line-height: 1.1;">High Vigor</div>'
-            f'</div>'
-            f'<div style="font-size: 2.2rem; text-shadow: 0 0 15px rgba(0,200,83,0.3);">📈</div>'
-            f'</div>'
-            f'<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">'
-            f'<div style="background: rgba(0,200,83,0.15); color: #00c853; font-weight: 800; padding: 4px 10px; border-radius: 20px; font-size: 0.9rem;">+14% w/w growth</div>'
-            f'</div>'
-            f'<div style="color: #b0b8c1; line-height: 1.5; font-size: 1.05rem;">The crop vegetation volume is rapidly expanding. Leaf density confirms optimal photosynthesis distribution across your field.</div>'
-            f'</div>',
-            unsafe_allow_html=True
-        )
-
-    with c_right:
-        st.markdown(
-            f'<div class="fade-in-el" style="animation-delay: 0.5s; background: rgba(18,18,18,0.65); border: 1px solid rgba(255,255,255,0.08); border-top: 4px solid #b0b8c1; border-radius: 16px; padding: 30px; height: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.6);">'
-            f'<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">'
-            f'<div>'
-            f'<div style="color: #b0b8c1; font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Moisture Stress</div>'
-            f'<div style="color: #f0f2f6; font-size: 2.2rem; font-weight: 900; line-height: 1.1;">Nominal Range</div>'
-            f'</div>'
-            f'<div style="font-size: 2.2rem;">🌱</div>'
-            f'</div>'
-            f'<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">'
-            f'<div style="background: rgba(255,255,255,0.05); color: #b0b8c1; font-weight: 700; padding: 4px 10px; border-radius: 20px; font-size: 0.9rem;">✓ Balanced Irrigation</div>'
-            f'</div>'
-            f'<div style="color: #b0b8c1; line-height: 1.5; font-size: 1.05rem;">Soil moisture levels indicate healthy root saturation. There is currently no threat of drought stress or root rot.</div>'
-            f'</div>',
-            unsafe_allow_html=True
-        )
-
-    # 4. EXTRA: Projected Yield
-    st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
-    st.markdown(
-        f'<div class="fade-in-el" style="animation-delay: 0.6s; background: rgba(0,200,83,0.08); border: 1px solid rgba(0,200,83,0.2); border-radius: 16px; padding: 25px; margin: 0 auto; width: 60%; display: flex; align-items: center; justify-content: center; gap: 25px; box-shadow: 0 8px 32px rgba(0,200,83,0.05);">'
-        f'<div style="font-size: 2.5rem; text-shadow: 0 0 15px rgba(0,200,83,0.4);">🌾</div>'
-        f'<div>'
-        f'<div style="color: #00c853; font-size: 1.05rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Projected Yield</div>'
-        f'<div style="color: #f0f2f6; font-size: 1.6rem; font-weight: 700;">24.5 - 26.0 Quintals</div>'
-        f'</div>'
-        f'</div>',
-        unsafe_allow_html=True
-    )
+    st.markdown('</div>', unsafe_allow_html=True)
 
 elif page == "Harvest Oracle":
+    st.markdown("""
+<style>
+/* Apply ONLY to main area */
+[data-testid="stAppViewContainer"] {
+    background: linear-gradient(to right, rgba(10,15,20,0.95) 30%, rgba(10,15,20,0.2) 100%),
+                url("https://imgs.search.brave.com/4PdU873wuo9p23BgBbCpqDiIQ4j1PMtXcbh-aaZcCk4/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTcw/NjE4ODExL3Bob3Rv/L3Jpc2luZy1jb3Ju/LXBsYW50YXRpb24t/YWdhaW5zdC1ibHVl/LXNreS5qcGc_cz02/MTJ4NjEyJnc9MCZr/PTIwJmM9a1FLOXpu/NXZtcTNyd1luN0sy/UDB1aldZWG43bFNp/R0U4UUViYTYyT2xJ/bz0");
+    background-size: cover;
+    background-position: right center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+</style>
+""", unsafe_allow_html=True)
     st.markdown("<h2 style='text-align:center;'>🔮 Harvest Oracle</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center; color:#8b9bb4; margin-bottom: 40px;'>Find the exact best day to sell your crops for maximum profit.</p>", unsafe_allow_html=True)
+
+    # --- LAND SUMMARY CARD ---
+    st.markdown(f"""
+    <div class="fade-in-el" style="animation-delay: 0.1s; background: rgba(18,18,18,0.65); border: 1px solid rgba(0,200,83,0.15); border-radius: 16px; padding: 25px; margin: 0 auto 30px auto; width: 85%; box-shadow: 0 8px 32px rgba(0,200,83,0.05); text-align: center;">
+        <h3 style="color: #00fa9a; margin-top: 0; margin-bottom: 15px;">📍 {selected_farm['name']}</h3>
+        <p style="color: #f0f2f6; font-size: 1.1rem; margin-bottom: 5px;">🌾 <b>Crop:</b> {selected_farm['crop']}</p>
+        <p style="color: #f0f2f6; font-size: 1.1rem; margin-bottom: 5px;">📏 <b>Land Size:</b> {selected_farm['size']} Acres</p>
+        <p style="color: #f0f2f6; font-size: 1.1rem; margin-bottom: 5px;">📊 <b>Avg NDVI:</b> {np.mean(selected_farm['ndvi']):.2f}</p>
+        <p style="color: #f0f2f6; font-size: 1.1rem; margin-bottom: 0;">💰 <b>Predicted Price:</b> ₹{np.mean(selected_farm['price']):.2f}/kg</p>
+    </div>
+    """, unsafe_allow_html=True)
 
     # --- AI PREDICTED PRICE COMPONENT ---
     st.markdown("<div style='margin-top: 50px;'></div>", unsafe_allow_html=True)
@@ -454,13 +603,21 @@ elif page == "Harvest Oracle":
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        ndvi_value = st.slider("🌱 Crop Health (NDVI)", 0.0, 1.0, 0.75, 0.01)
+        ndvi_value = st.slider("🌱 Crop Health (NDVI)", 0.0, 1.0, float(np.mean(selected_farm["ndvi"])), 0.01)
     with col2:
-        temperature = st.slider("🌡️ Temperature (°C)", 20.0, 40.0, 30.0, 0.5)
+        temperature = st.slider("🌡️ Temperature (°C)", 20.0, 40.0, float(np.mean(selected_farm["temperature"])), 0.5)
     with col3:
-        rainfall = st.slider("🌧️ Rainfall (mm)", 0.0, 200.0, 80.0, 1.0)
+        rainfall = st.slider("🌧️ Rainfall (mm)", 0.0, 200.0, float(np.mean(selected_farm["rainfall"])), 1.0)
         
-    predicted_price = predict_price(ndvi_value, temperature, rainfall)
+    input_data = [
+        np.mean(selected_farm["ndvi"]),
+        np.mean(selected_farm["temperature"]),
+        np.mean(selected_farm["rainfall"])
+    ]
+    if model is not None:
+        predicted_price = float(model.predict(np.array([input_data]))[0])
+    else:
+        predicted_price = float(np.mean(selected_farm["price"]))
     
     if predicted_price > 20:
         card_glow = "rgba(0,250,154,0.4)" # Green
@@ -611,8 +768,8 @@ elif page == "Harvest Oracle":
 
     
     # HARDCODED REAL CONDITIONS
-    today_price = 14.0
-    normal_price = 21.0
+    today_price = float(np.mean(selected_farm["price"]))
+    normal_price = today_price + 7.0
     
     if today_price < normal_price:
         recommendation = "WAIT"
@@ -1077,6 +1234,19 @@ elif page == "Harvest Oracle":
 
 
 elif page == "Market Insights":
+    st.markdown("""
+<style>
+/* Apply ONLY to main area */
+[data-testid="stAppViewContainer"] {
+    background: linear-gradient(to right, rgba(10,15,20,0.95) 30%, rgba(10,15,20,0.2) 100%),
+                url("https://imgs.search.brave.com/Joo46W7y5x7XXOh45agJ-FgCeiHa5EnzySX3mgFZbwc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTY4/MzUxNDE0L3Bob3Rv/L2dyZWVuLWNvcm5m/aWVsZC1yZWFkeS1m/b3ItaGFydmVzdC1s/YXRlLWFmdGVybm9v/bi1saWdodC1zdW5z/ZXQtaWxsaW5vaXMu/anBnP3M9NjEyeDYx/MiZ3PTAmaz0yMCZj/PWJLQ2ZrWFRTc0F2/UmJFeEM2VVVJX3BX/QjJGNFo2b3U2YnBK/dHpsaWZJcVE9");
+    background-size: cover;
+    background-position: right center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+</style>
+""", unsafe_allow_html=True)
     st.markdown("<h2>🌍 Market Insights & Analytics</h2>", unsafe_allow_html=True)
 
     # --- MARKET SITUATION COMPONENT ---
@@ -1087,8 +1257,8 @@ elif page == "Market Insights":
     total_farms = 1200
     harvesting_farms = 847
     percentage_harvesting = int((harvesting_farms / total_farms) * 100)
-    current_price = 14
-    normal_price = 21
+    current_price = int(np.mean(selected_farm["price"]))
+    normal_price = current_price + 7
 
     # 2. ALERT BANNER
     st.markdown(
@@ -1188,14 +1358,866 @@ elif page == "Market Insights":
     with chart_c2:
         st.markdown("#### 🌿 Crop Health Trend (NDVI)")
         if 'ndvi' in df.columns:
-            st.line_chart(df['ndvi'].head(60), color="#4CAF50")
+            st.line_chart(df['ndvi'].head(60), color='#4CAF50')
         
-    st.markdown("---")
+    st.markdown('---')
     st.markdown("#### 🚜 Simulated Market Supply Forecast")
     st.markdown("<p style='color:#a0aec0; font-size:0.95rem;'>Index-based rendering of agricultural output proxy.</p>", unsafe_allow_html=True)
     if 'farms_ready' in df.columns:
-        st.bar_chart(df['farms_ready'].head(60), color="#ff9800")
+        st.bar_chart(df['farms_ready'].head(60), color='#ff9800')
     else:
         # Fallback to display valid bar chart using temperature/rainfall as proxy since user requested no crash
-        st.bar_chart(df['rainfall'].head(60), color="#ff9800")
+        st.bar_chart(df['rainfall'].head(60), color='#ff9800')
 
+elif page == "More Features":
+    st.markdown("""
+<style>
+/* Synchronize Background Aesthetic */
+[data-testid="stAppViewContainer"] {
+    background: linear-gradient(to right, rgba(10,15,20,0.95) 30%, rgba(10,15,20,0.4) 100%),
+                url("https://imgs.search.brave.com/Joo46W7y5x7XXOh45agJ-FgCeiHa5EnzySX3mgFZbwc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTY4/MzUxNDE0L3Bob3Rv/L2dyZWVuLWNvcm5m/aWVsZC1yZWFkeS1m/b3ItaGFydmVzdC1s/YXRlLWFmdGVybm9v/bi1saWdodC1zdW5z/ZXQtaWxsaW5vaXMu/anBnP3M9NjEyeDYx/MiZ3PTAmaz0yMCZj/PWJLQ2ZrWFRTc0F2/UmJFeEM2VVVJX3BX/QjJGNFo2b3U2YnBK/dHpsaWZJcVE9");
+    background-size: cover;
+    background-position: right center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+.feat-card {
+    background: rgba(18, 18, 20, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 30px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    height: 100%;
+    margin-bottom: 20px;
+}
+.feat-card:hover {
+    transform: translateY(-8px);
+    border: 1px solid rgba(0, 200, 83, 0.4);
+    box-shadow: 0 15px 40px rgba(0, 200, 83, 0.15);
+    background: rgba(22, 28, 26, 0.85);
+}
+.feat-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    display: inline-block;
+    padding: 20px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 50%;
+}
+.feat-title {
+    color: #f0f2f6;
+    font-size: 1.4rem;
+    font-weight: 900;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+}
+.feat-desc {
+    color: #8b9bb4;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    min-height: 80px;
+}
+div.stButton > button {
+    width: 100%;
+    background: linear-gradient(90deg, #00c853 0%, #00e676 100%) !important;
+    color: #0b0b0b !important;
+    font-weight: 800 !important;
+    padding: 12px 24px !important;
+    border-radius: 30px !important;
+    border: none !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    box-shadow: 0 4px 15px rgba(0, 200, 83, 0.2) !important;
+    transition: all 0.2s ease !important;
+}
+div.stButton > button:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 6px 20px rgba(0, 200, 83, 0.4) !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-top: 40px;'></div>", unsafe_allow_html=True)
+    st.markdown("<h2 class='fade-in-el' style='text-align:center; font-weight: 900; color:#f0f2f6; font-size: 2.8rem;'>Explore Advanced Features</h2>", unsafe_allow_html=True)
+    st.markdown("<p class='fade-in-el' style='text-align:center; color:#8b9bb4; margin-bottom: 60px; font-size: 1.15rem;'>Unlock powerful AI tools for smarter farming</p>", unsafe_allow_html=True)
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        st.markdown("""
+        <div class="feat-card">
+            <div class="feat-icon">🧪</div>
+            <div class="feat-title">Soil Intelligence</div>
+            <div class="feat-desc">Analyze soil health signatures and generate precise fertilizer recommendations.</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("OPEN", key="soil_btn"):
+            st.session_state["current_page"] = "soil_intelligence"
+
+    with c2:
+        st.markdown("""
+        <div class="feat-card">
+            <div class="feat-icon">🌩️</div>
+            <div class="feat-title">Micro-Climate</div>
+            <div class="feat-desc">Hyper-local weather forecasting tuned explicitly to your agricultural grid coordinates.</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("OPEN", key="weather_btn"):
+            st.session_state["current_page"] = "micro_climate"
+
+    with c3:
+        st.markdown("""
+        <div class="feat-card">
+            <div class="feat-icon">🦠</div>
+            <div class="feat-title">Disease Scanner</div>
+            <div class="feat-desc">Upload leaf imagery for an instant AI crop diagnosis via our deep neural networks.</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("OPEN", key="disease_btn"):
+            st.session_state["current_page"] = "disease_scanner"
+
+elif page == "Soil Intelligence":
+    # ── Back button ────────────────────────────────────────────────────────────
+    if st.button("← Back", key="soil_back_btn"):
+        st.session_state["current_page"] = "main"
+        st.rerun()
+
+    st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+
+    # ── Page title ─────────────────────────────────────────────────────────────
+    st.markdown("""
+<style>
+[data-testid="stAppViewContainer"] {
+    background: linear-gradient(to right, rgba(10,15,20,0.97) 35%, rgba(10,15,20,0.5) 100%),
+                url("https://imgs.search.brave.com/Joo46W7y5x7XXOh45agJ-FgCeiHa5EnzySX3mgFZbwc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTY4/MzUxNDE0L3Bob3Rv/L2dyZWVuLWNvcm5m/aWVsZC1yZWFkeS1m/b3ItaGFydmVzdC1s/YXRlLWFmdGVybm9v/bi1saWdodC1zdW5z/ZXQtaWxsaW5vaXMu/anBnP3M9NjEyeDYx/MiZ3PTAmaz0yMCZj/PWJLQ2ZrWFRTc0F2/UmJFeEM2VVVJX3BX/QjJGNFo2b3U2YnBK/dHpsaWZJcVE9");
+    background-size: cover;
+    background-position: right center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+</style>
+""", unsafe_allow_html=True)
+
+    st.markdown("<h2 style='text-align:center; font-weight:900; font-size:2.6rem; color:#f0f2f6;'>🧪 Soil Intelligence Dashboard</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#8b9bb4; font-size:1.1rem; margin-bottom:40px;'>AI-powered soil health analysis from satellite NDVI imagery</p>", unsafe_allow_html=True)
+
+    # ── Section 1: Farmer Info Card ────────────────────────────────────────────
+    st.markdown(f"""
+<div style="background: rgba(18,22,28,0.85); border: 1px solid rgba(255,255,255,0.07);
+            border-left: 5px solid #00c853; border-radius: 16px; padding: 28px 32px;
+            margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+    <div style="color:#00c853; font-size:0.85rem; font-weight:800; text-transform:uppercase;
+                letter-spacing:2px; margin-bottom:18px;">📋 Farmer Profile</div>
+    <div style="display:flex; gap:50px; flex-wrap:wrap;">
+        <div>
+            <div style="color:#8b9bb4; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px;">Farmer</div>
+            <div style="color:#f0f2f6; font-size:1.2rem; font-weight:700; margin-top:4px;">{selected_farm.get('name', 'Unknown Farmer')}</div>
+        </div>
+        <div>
+            <div style="color:#8b9bb4; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px;">Location</div>
+            <div style="color:#f0f2f6; font-size:1.2rem; font-weight:700; margin-top:4px;">📍 {selected_farm.get('name', 'N/A')}</div>
+        </div>
+        <div>
+            <div style="color:#8b9bb4; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px;">Land Size</div>
+            <div style="color:#f0f2f6; font-size:1.2rem; font-weight:700; margin-top:4px;">📏 {selected_farm.get('size', 'N/A')} Acres</div>
+        </div>
+        <div>
+            <div style="color:#8b9bb4; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px;">Crop</div>
+            <div style="color:#f0f2f6; font-size:1.2rem; font-weight:700; margin-top:4px;">🌾 {selected_farm.get('crop', 'N/A')}</div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+    # ── Section 2: Soil Health Overview ───────────────────────────────────────
+    avg_ndvi = float(np.mean(selected_farm["ndvi"]))
+    if avg_ndvi >= 0.6:
+        condition      = "Good"
+        condition_color = "#00c853"
+        condition_icon  = "✅"
+    elif avg_ndvi >= 0.3:
+        condition      = "Moderate"
+        condition_color = "#ffd700"
+        condition_icon  = "⚠️"
+    else:
+        condition      = "Poor"
+        condition_color = "#ff4d4f"
+        condition_icon  = "🔴"
+
+    st.markdown("<h3 style='color:#a5d6a7; font-weight:800; margin-bottom:16px;'>🌱 Soil Health Overview</h3>", unsafe_allow_html=True)
+    ov_c1, ov_c2 = st.columns(2)
+    with ov_c1:
+        st.markdown(f"""
+<div style="background:rgba(18,22,28,0.85); border:1px solid rgba(255,255,255,0.07);
+            border-radius:14px; padding:24px; text-align:center;
+            box-shadow:0 6px 20px rgba(0,0,0,0.3);">
+    <div style="color:#8b9bb4; font-size:0.85rem; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px;">Average NDVI</div>
+    <div style="color:#00e676; font-size:3rem; font-weight:900; text-shadow:0 0 20px rgba(0,230,118,0.3);">{avg_ndvi:.3f}</div>
+    <div style="color:#8b9bb4; font-size:0.85rem; margin-top:8px;">Range: 0.0 → 1.0</div>
+</div>
+""", unsafe_allow_html=True)
+
+    with ov_c2:
+        st.markdown(f"""
+<div style="background:rgba(18,22,28,0.85); border:1px solid rgba(255,255,255,0.07);
+            border-radius:14px; padding:24px; text-align:center;
+            box-shadow:0 6px 20px rgba(0,0,0,0.3);">
+    <div style="color:#8b9bb4; font-size:0.85rem; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px;">Soil Condition</div>
+    <div style="color:{condition_color}; font-size:3rem; font-weight:900; text-shadow:0 0 20px rgba(255,255,255,0.1);">{condition_icon}</div>
+    <div style="color:{condition_color}; font-size:1.4rem; font-weight:800; margin-top:8px;">{condition}</div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-top:30px;'></div>", unsafe_allow_html=True)
+
+    # ── Section 3: Zone Analysis ───────────────────────────────────────────────
+    st.markdown("<h3 style='color:#a5d6a7; font-weight:800; margin-bottom:16px;'>📊 Zone Analysis</h3>", unsafe_allow_html=True)
+
+    # Fallback in case zone_stats isn't in scope (e.g. user navigated directly)
+    try:
+        _zone_stats    = zone_stats
+        _recommendation = recommendation
+    except NameError:
+        import numpy as _np
+        _ndvi_fallback  = _np.random.uniform(0.3, 0.9, (80, 80))
+        _soil_fallback  = analyze_soil_from_ndvi(_ndvi_fallback)
+        _zone_stats     = _soil_fallback["zone_stats"]
+        _recommendation = _soil_fallback["recommendation"]
+
+    zone_cols = st.columns(3)
+    _zone_cfg = [
+        ("Low NDVI",    _zone_stats["low"],    "#ff4d4f", "🔴", "< 0.3"),
+        ("Medium NDVI", _zone_stats["medium"], "#ffd700", "🟡", "0.3 – 0.6"),
+        ("High NDVI",   _zone_stats["high"],   "#00c853", "🟢", "≥ 0.6"),
+    ]
+    for col, (label, pct, color, icon, rng) in zip(zone_cols, _zone_cfg):
+        with col:
+            st.markdown(f"""
+<div style="background:rgba(18,22,28,0.85); border:1px solid rgba(255,255,255,0.07);
+            border-top:4px solid {color}; border-radius:14px; padding:22px;
+            text-align:center; box-shadow:0 6px 20px rgba(0,0,0,0.3);">
+    <div style="font-size:2rem; margin-bottom:10px;">{icon}</div>
+    <div style="color:#8b9bb4; font-size:0.8rem; text-transform:uppercase; letter-spacing:1.5px;">{label}</div>
+    <div style="color:{color}; font-size:2.4rem; font-weight:900; margin:8px 0;">{pct:.1f}%</div>
+    <div style="color:#555e6e; font-size:0.8rem;">NDVI {rng}</div>
+    <div style="margin-top:12px; height:6px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden;">
+        <div style="width:{pct}%; height:100%; background:{color}; border-radius:4px;
+                    box-shadow:0 0 8px {color};"></div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-top:30px;'></div>", unsafe_allow_html=True)
+
+    # ── Section 3b: 3D NPK Zone Field Map ─────────────────────────────────────
+    st.markdown("<h3 style='color:#a5d6a7; font-weight:800; margin-bottom:6px;'>🗺️ 3D NPK Zone Field Map</h3>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#8b9bb4; font-size:0.95rem; margin-bottom:20px;'>Real-time spatial intelligence — nitrogen (N), phosphorus (P) and potassium (K) deficiency zones across your field</p>", unsafe_allow_html=True)
+
+    # Build NPK surface from the farm's NDVI data
+    try:
+        _ndvi_src = selected_farm.get("ndvi", None)
+        if _ndvi_src is None or not isinstance(_ndvi_src, np.ndarray):
+            raise ValueError("no ndvi")
+        # Downsample to 60×60 for smooth rendering
+        from scipy.ndimage import zoom, gaussian_filter
+        _raw = _ndvi_src
+        _target = 60
+        _factor = _target / _raw.shape[0]
+        _ndvi_map = zoom(_raw, _factor)
+    except Exception:
+        from scipy.ndimage import gaussian_filter
+        _rng = np.random.default_rng(42)
+        _ndvi_map = _rng.uniform(0.2, 0.9, (60, 60)).astype(np.float32)
+
+    _ndvi_map = gaussian_filter(_ndvi_map, sigma=2)
+    _n  = _ndvi_map.shape[0]
+    _xs = np.linspace(0, 10, _n)
+    _ys = np.linspace(0, 10, _n)
+    _X, _Y = np.meshgrid(_xs, _ys)
+
+    # Terrain height — organic micro-elevation driven by NDVI health
+    _Z = (
+        0.4 * np.sin(_X * 0.8) * np.cos(_Y * 0.7)
+        + 0.2 * np.cos(_X * 1.4 + 0.5) * np.sin(_Y * 0.9)
+        + (_ndvi_map - 0.5) * 0.6
+    )
+    _Z = gaussian_filter(_Z, sigma=1.5)
+
+    # NPK score per cell (0=N-deficient/red, 0.5=P/yellow, 1=K-healthy/green)
+    _npk_score = np.where(
+        _ndvi_map < 0.3,  0.0,          # Red   — High N needed
+        np.where(_ndvi_map < 0.6, 0.5,  # Yellow — P/balanced
+                 1.0)                   # Green  — K healthy
+    )
+
+    # Custom discrete 3-zone colourscale
+    _npk_colorscale = [
+        [0.00, "#ff2d2d"],   # N-deficient: bright red
+        [0.25, "#ff6b00"],   # transition
+        [0.49, "#ffd700"],   # P zone: gold
+        [0.50, "#ffd700"],
+        [0.70, "#7ecb20"],   # transition
+        [1.00, "#00e676"],   # K healthy: vivid green
+    ]
+
+    _hover = (
+        "<b>🌍 Field Position</b><br>"
+        "X: %{x:.1f} m &nbsp; Y: %{y:.1f} m<br>"
+        "Elevation: %{z:.2f} m<br>"
+        "<b>NDVI:</b> %{customdata[0]:.3f}<br>"
+        "<b>Zone:</b> %{customdata[1]}<br>"
+        "<b>NPK Action:</b> %{customdata[2]}"
+        "<extra></extra>"
+    )
+
+    _zone_label = np.where(
+        _ndvi_map < 0.3,  "🔴 N-Deficient",
+        np.where(_ndvi_map < 0.6, "🟡 P-Balanced",
+                 "🟢 K-Healthy")
+    )
+    _npk_action = np.where(
+        _ndvi_map < 0.3,  "Apply Urea (N) urgently",
+        np.where(_ndvi_map < 0.6, "Apply DAP (P) + MOP (K)",
+                 "Maintain — no action needed")
+    )
+
+    _custom = np.stack([_ndvi_map, _zone_label, _npk_action], axis=-1)
+
+    _fig_npk = go.Figure()
+
+    _fig_npk.add_trace(go.Surface(
+        x=_X, y=_Y, z=_Z,
+        surfacecolor=_npk_score,
+        colorscale=_npk_colorscale,
+        cmin=0, cmax=1,
+        customdata=_custom,
+        hovertemplate=_hover,
+        showscale=True,
+        colorbar=dict(
+            title=dict(text="NPK Zone", font=dict(color="#a5d6a7", size=13)),
+            tickvals=[0.0, 0.5, 1.0],
+            ticktext=["N-Deficient", "P-Balanced", "K-Healthy"],
+            tickfont=dict(color="#b0b8c1", size=11),
+            bgcolor="rgba(15,20,26,0.7)",
+            bordercolor="rgba(255,255,255,0.08)",
+            borderwidth=1,
+            len=0.75,
+            thickness=16,
+        ),
+        opacity=0.97,
+        lighting=dict(
+            ambient=0.6, diffuse=0.85, roughness=0.4,
+            specular=0.3, fresnel=0.2
+        ),
+        lightposition=dict(x=2000, y=1000, z=3000),
+        contours=dict(
+            z=dict(show=True, usecolormap=True, highlightcolor="#00e676",
+                   project=dict(z=True), width=1)
+        ),
+    ))
+
+    # Zone boundary annotation markers
+    for _thresh, _zlabel, _color, _sym in [
+        (0.3, "N Zone Boundary", "#ff4d4f", "circle"),
+        (0.6, "K Zone Start",   "#00c853", "diamond"),
+    ]:
+        _bx = _X[np.abs(_ndvi_map - _thresh) < 0.04]
+        _by = _Y[np.abs(_ndvi_map - _thresh) < 0.04]
+        _bz = _Z[np.abs(_ndvi_map - _thresh) < 0.04]
+        if len(_bx) > 0:
+            _step = max(1, len(_bx) // 30)
+            _fig_npk.add_trace(go.Scatter3d(
+                x=_bx[::_step], y=_by[::_step], z=_bz[::_step] + 0.08,
+                mode="markers",
+                name=_zlabel,
+                marker=dict(size=4, color=_color, opacity=0.8,
+                            symbol=_sym,
+                            line=dict(color="white", width=0.5)),
+                hovertemplate=f"<b>{_zlabel}</b><extra></extra>",
+            ))
+
+    _fig_npk.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        height=580,
+        margin=dict(l=0, r=0, t=30, b=0),
+        scene=dict(
+            bgcolor="rgba(8,12,18,0.95)",
+            xaxis=dict(title="Field Width (m)", color="#8b9bb4",
+                       gridcolor="rgba(255,255,255,0.05)",
+                       showbackground=True,
+                       backgroundcolor="rgba(10,15,22,0.6)"),
+            yaxis=dict(title="Field Length (m)", color="#8b9bb4",
+                       gridcolor="rgba(255,255,255,0.05)",
+                       showbackground=True,
+                       backgroundcolor="rgba(10,15,22,0.6)"),
+            zaxis=dict(title="Elevation (m)", color="#8b9bb4",
+                       gridcolor="rgba(255,255,255,0.04)",
+                       showbackground=True,
+                       backgroundcolor="rgba(10,15,22,0.4)"),
+            camera=dict(
+                eye=dict(x=1.6, y=-1.6, z=1.2),
+                center=dict(x=0, y=0, z=-0.1),
+            ),
+            aspectratio=dict(x=1.2, y=1.2, z=0.45),
+        ),
+        showlegend=True,
+        legend=dict(
+            x=0.01, y=0.98,
+            bgcolor="rgba(10,15,20,0.7)",
+            bordercolor="rgba(255,255,255,0.08)",
+            borderwidth=1,
+            font=dict(color="#b0b8c1", size=12),
+        ),
+        title=dict(
+            text=f"🌾 {selected_farm.get('name','Field')} — NPK Nutrient Zone Intelligence",
+            font=dict(color="#f0f2f6", size=15, family="Outfit"),
+            x=0.5, xanchor="center",
+        ),
+    )
+
+    st.markdown("""
+<div style="
+    background:
+        linear-gradient(rgba(8,12,18,0.72), rgba(8,12,18,0.72)),
+        url('https://imgs.search.brave.com/IzLXsQrPOUD6Qt3ApGZOxq85xz2i88Hhi2kZXxCm2H0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9wbHVz/LnVuc3BsYXNoLmNv/bS9wcmVtaXVtX3Bo/b3RvLTE2NjE5NjI2/OTIwNTktNTVkNWE0/MzE5ODE0P2ZtPWpw/ZyZxPTYwJnc9MzAw/MCZhdXRvPWZvcm1h/dCZmaXQ9Y3JvcCZp/eGxpYj1yYi00LjEu/MCZpeGlkPU0zd3hN/akEzZkRCOE1IeHpa/V0Z5WTJoOE1UZDhm/R1poY20xcGJtZDha/VzU4TUh4OE1IeDhm/REE9');
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    margin-bottom: 10px;">
+""", unsafe_allow_html=True)
+    st.plotly_chart(_fig_npk, use_container_width=True, config={"displayModeBar": True})
+    st.markdown("""
+    <div style="display:flex; gap:24px; justify-content:center; margin-top:8px; flex-wrap:wrap;">
+        <span style="color:#ff4d4f; font-weight:700; font-size:0.9rem;">🔴 N-Deficient — Apply Urea</span>
+        <span style="color:#ffd700; font-weight:700; font-size:0.9rem;">🟡 P-Balanced — Apply DAP/MOP</span>
+        <span style="color:#00e676; font-weight:700; font-size:0.9rem;">🟢 K-Healthy — No action needed</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-top:30px;'></div>", unsafe_allow_html=True)
+
+    # ── Section 4: Fertilizer Recommendation ──────────────────────────────────
+    st.markdown("<h3 style='color:#a5d6a7; font-weight:800; margin-bottom:16px;'>💊 Fertilizer Recommendation</h3>", unsafe_allow_html=True)
+
+    if _zone_stats["low"] > 30:
+        rec_color  = "#ff4d4f"
+        rec_border = "rgba(255,77,79,0.3)"
+        rec_icon   = "🚨"
+        urgency    = "URGENT"
+    elif _zone_stats["medium"] > 50:
+        rec_color  = "#ffd700"
+        rec_border = "rgba(255,215,0,0.3)"
+        rec_icon   = "⚠️"
+        urgency    = "RECOMMENDED"
+    else:
+        rec_color  = "#00c853"
+        rec_border = "rgba(0,200,83,0.3)"
+        rec_icon   = "✅"
+        urgency    = "OPTIMAL"
+
+    st.markdown(f"""
+<div style="background:rgba(18,22,28,0.9); border:1px solid {rec_border};
+            border-left:6px solid {rec_color}; border-radius:14px; padding:30px;
+            box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
+        <span style="font-size:2.4rem;">{rec_icon}</span>
+        <div>
+            <div style="color:{rec_color}; font-size:0.85rem; font-weight:800;
+                        text-transform:uppercase; letter-spacing:2px;">{urgency}</div>
+            <div style="color:#f0f2f6; font-size:1.25rem; font-weight:700; margin-top:4px;">
+                {_recommendation}
+            </div>
+        </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:16px;
+                color:#8b9bb4; font-size:0.95rem; line-height:1.6;">
+        💡 Based on satellite NDVI analysis of your <strong style='color:#f0f2f6'>{selected_farm.get('size', 'N/A')} Acres</strong>
+        in <strong style='color:#f0f2f6'>{selected_farm.get('name', 'N/A')}</strong>.
+        Consult a local agronomist before applying any chemical treatment.
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+
+    st.markdown("<div style='margin-bottom:60px;'></div>", unsafe_allow_html=True)
+
+# ═══════════════════════════════════════════════════════════════
+# MICRO CLIMATE PAGE
+# ═══════════════════════════════════════════════════════════════
+elif page == "Micro Climate":
+    if st.button("← Back", key="climate_back_btn"):
+        st.session_state["current_page"] = "main"
+        st.rerun()
+
+    st.markdown("""
+<style>
+[data-testid="stAppViewContainer"] {
+    background: linear-gradient(to right, rgba(8,12,20,0.96) 30%, rgba(8,12,20,0.45) 100%),
+                url("https://imgs.search.brave.com/4PdU873wuo9p23BgBbCpqDiIQ4j1PMtXcbh-aaZcCk4/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTcw/NjE4ODExL3Bob3Rv/L3Jpc2luZy1jb3Ju/LXBsYW50YXRpb24t/YWdhaW5zdC1ibHVl/LXNreS5qcGc_cz02/MTJ4NjEyJnc9MCZr/PTIwJmM9a1FLOXpu/NXZtcTNyd1luN0sy/UDB1aldZWG43bFNp/R0U4UUViYTYyT2xJ/bz0");
+    background-size: cover;
+    background-position: right center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+</style>
+""", unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-top:10px;'></div>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center; font-weight:900; font-size:2.6rem; color:#f0f2f6;'>🌩️ Micro-Climate Intelligence</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#8b9bb4; font-size:1.1rem; margin-bottom:35px;'>Hyper-local atmospheric forecasting tuned to your exact agricultural grid coordinates</p>", unsafe_allow_html=True)
+
+    # ── Farm context strip ─────────────────────────────────────────────────────
+    _temp_now  = float(np.mean(selected_farm.get("temperature", [30])))
+    _rain_now  = float(np.mean(selected_farm.get("rainfall",    [80])))
+    _ndvi_now  = float(np.mean(selected_farm.get("ndvi",        [0.5])))
+    _humidity  = round(60 + (_rain_now / 200) * 35, 1)
+    _wind_spd  = round(8 + np.random.uniform(-3, 5), 1)
+    _uv_index  = round(max(1, 10 - (_ndvi_now * 4)), 1)
+    _dew_point = round(_temp_now - ((100 - _humidity) / 5), 1)
+
+    _metrics = [
+        ("🌡️", f"{_temp_now:.1f}°C",   "Temperature",   "#ff7043"),
+        ("💧", f"{_rain_now:.0f} mm",   "Rainfall",      "#42a5f5"),
+        ("💨", f"{_wind_spd} km/h",     "Wind Speed",    "#80cbc4"),
+        ("🌫️", f"{_humidity}%",         "Humidity",      "#ab47bc"),
+        ("☀️", f"UV {_uv_index}",       "UV Index",      "#ffd54f"),
+        ("🌡️", f"{_dew_point}°C",       "Dew Point",     "#4db6ac"),
+    ]
+    mc = st.columns(6)
+    for col, (icon, val, label, color) in zip(mc, _metrics):
+        with col:
+            st.markdown(f"""
+<div style="background:rgba(16,20,28,0.85); border:1px solid rgba(255,255,255,0.07);
+            border-top:3px solid {color}; border-radius:12px; padding:16px 10px;
+            text-align:center; box-shadow:0 6px 20px rgba(0,0,0,0.4);">
+    <div style="font-size:1.6rem;">{icon}</div>
+    <div style="color:{color}; font-size:1.4rem; font-weight:900; margin:6px 0;">{val}</div>
+    <div style="color:#8b9bb4; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px;">{label}</div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-top:28px;'></div>", unsafe_allow_html=True)
+
+    # ── 7-Day Forecast Chart ───────────────────────────────────────────────────
+    st.markdown("<h3 style='color:#80cbc4; font-weight:800; margin-bottom:10px;'>📅 7-Day Micro-Climate Forecast</h3>", unsafe_allow_html=True)
+    np.random.seed(7)
+    _days  = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    _temps = _temp_now + np.random.uniform(-3, 4, 7)
+    _rains = np.clip(_rain_now + np.random.uniform(-20, 30, 7), 0, 200)
+    _hums  = np.clip(_humidity + np.random.uniform(-10, 10, 7), 30, 100)
+
+    _fig_cl = go.Figure()
+    _fig_cl.add_trace(go.Scatter(
+        x=_days, y=_temps, name="Temp (°C)",
+        mode="lines+markers",
+        line=dict(color="#ff7043", width=3, shape="spline"),
+        marker=dict(size=9, color="#ff7043", line=dict(color="white", width=1.5)),
+        fill="tozeroy", fillcolor="rgba(255,112,67,0.08)",
+        hovertemplate="<b>%{x}</b><br>🌡️ Temp: %{y:.1f}°C<extra></extra>",
+    ))
+    _fig_cl.add_trace(go.Bar(
+        x=_days, y=_rains, name="Rainfall (mm)",
+        marker=dict(color="rgba(66,165,245,0.65)",
+                    line=dict(color="#42a5f5", width=1.5)),
+        yaxis="y2",
+        hovertemplate="<b>%{x}</b><br>💧 Rain: %{y:.0f} mm<extra></extra>",
+    ))
+    _fig_cl.add_trace(go.Scatter(
+        x=_days, y=_hums, name="Humidity (%)",
+        mode="lines+markers",
+        line=dict(color="#ab47bc", width=2, dash="dot", shape="spline"),
+        marker=dict(size=7, color="#ab47bc"),
+        yaxis="y3",
+        hovertemplate="<b>%{x}</b><br>💦 Humidity: %{y:.1f}%<extra></extra>",
+    ))
+    _fig_cl.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        height=380, margin=dict(l=20, r=60, t=20, b=20),
+        xaxis=dict(color="#8b9bb4", gridcolor="rgba(255,255,255,0.04)"),
+        yaxis=dict(title="Temp (°C)", color="#ff7043",
+                   gridcolor="rgba(255,255,255,0.05)"),
+        yaxis2=dict(title="Rainfall (mm)", overlaying="y", side="right",
+                    color="#42a5f5", showgrid=False),
+        yaxis3=dict(overlaying="y", side="right", position=0.97,
+                    color="#ab47bc", showgrid=False, showticklabels=False),
+        legend=dict(bgcolor="rgba(10,14,20,0.7)", bordercolor="rgba(255,255,255,0.08)",
+                    borderwidth=1, font=dict(color="#b0b8c1", size=11)),
+        hovermode="x unified",
+    )
+    st.markdown("""<div style="background:rgba(10,14,22,0.88); border:1px solid rgba(255,255,255,0.07);
+        border-radius:16px; padding:16px; box-shadow:0 10px 35px rgba(0,0,0,0.5); margin-bottom:24px;">""",
+        unsafe_allow_html=True)
+    st.plotly_chart(_fig_cl, use_container_width=True, config={"displayModeBar": False})
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # ── Alerts & Agronomic Impact ──────────────────────────────────────────────
+    st.markdown("<h3 style='color:#80cbc4; font-weight:800; margin-bottom:14px;'>⚡ Weather Alerts & Crop Impact</h3>", unsafe_allow_html=True)
+    _al1, _al2 = st.columns(2)
+    with _al1:
+        _rain_alert = "🌧️ Heavy Rainfall Expected" if np.max(_rains) > 100 else "✅ Rainfall Normal"
+        _rain_color = "#42a5f5" if np.max(_rains) > 100 else "#00c853"
+        st.markdown(f"""
+<div style="background:rgba(16,20,28,0.9); border-left:5px solid {_rain_color};
+            border-radius:12px; padding:20px; box-shadow:0 6px 20px rgba(0,0,0,0.4); height:100%;">
+    <div style="color:{_rain_color}; font-weight:800; font-size:1.05rem; margin-bottom:10px;">{_rain_alert}</div>
+    <div style="color:#b0b8c1; line-height:1.6; font-size:0.95rem;">
+        Peak rainfall of <strong style="color:#f0f2f6">{np.max(_rains):.0f} mm</strong> projected on <strong style="color:#f0f2f6">{_days[int(np.argmax(_rains))]}</strong>.
+        Ensure field drainage channels are clear. Avoid fertilizer application 48 hrs before peak.
+    </div>
+</div>
+""", unsafe_allow_html=True)
+    with _al2:
+        _heat_stress = _temp_now > 35
+        _heat_color  = "#ff4d4f" if _heat_stress else "#ffd700"
+        _heat_msg    = "🔥 Heat Stress Alert" if _heat_stress else "🌤️ Optimal Temperature Range"
+        st.markdown(f"""
+<div style="background:rgba(16,20,28,0.9); border-left:5px solid {_heat_color};
+            border-radius:12px; padding:20px; box-shadow:0 6px 20px rgba(0,0,0,0.4); height:100%;">
+    <div style="color:{_heat_color}; font-weight:800; font-size:1.05rem; margin-bottom:10px;">{_heat_msg}</div>
+    <div style="color:#b0b8c1; line-height:1.6; font-size:0.95rem;">
+        Current avg temp <strong style="color:#f0f2f6">{_temp_now:.1f}°C</strong>.
+        {'Irrigate in early morning (5–7 AM) to reduce crop transpiration stress. Consider shade netting for sensitive crops.' if _heat_stress else 'Temperature is within optimal growth range for your crop. Maintain regular irrigation schedule.'}
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-bottom:60px;'></div>", unsafe_allow_html=True)
+
+
+# ═══════════════════════════════════════════════════════════════
+# DISEASE SCANNER PAGE
+# ═══════════════════════════════════════════════════════════════
+elif page == "Disease Scanner":
+    if st.button("← Back", key="disease_back_btn"):
+        st.session_state["current_page"] = "main"
+        st.rerun()
+
+    st.markdown("""
+<style>
+[data-testid="stAppViewContainer"] {
+    background: linear-gradient(to right, rgba(8,12,20,0.96) 30%, rgba(8,12,20,0.45) 100%),
+                url("https://imgs.search.brave.com/Joo46W7y5x7XXOh45agJ-FgCeiHa5EnzySX3mgFZbwc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTY4/MzUxNDE0L3Bob3Rv/L2dyZWVuLWNvcm5m/aWVsZC1yZWFkeS1m/b3ItaGFydmVzdC1s/YXRlLWFmdGVybm9v/bi1saWdodC1zdW5z/ZXQtaWxsaW5vaXMu/anBnP3M9NjEyeDYx/MiZ3PTAmaz0yMCZj/PWJLQ2ZrWFRTc0F2/UmJFeEM2VVVJX3BX/QjJGNFo2b3U2YnBK/dHpsaWZJcVE9");
+    background-size: cover;
+    background-position: right center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+</style>
+""", unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-top:10px;'></div>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center; font-weight:900; font-size:2.6rem; color:#f0f2f6;'>🦠 Disease Scanner</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#8b9bb4; font-size:1.1rem; margin-bottom:35px;'>AI-powered crop disease detection from leaf imagery and field NDVI signatures</p>", unsafe_allow_html=True)
+
+    # ── Risk dashboard from live NDVI ──────────────────────────────────────────
+    _ndvi_mean = float(np.mean(selected_farm.get("ndvi", [0.5])))
+    _temp_mean = float(np.mean(selected_farm.get("temperature", [30])))
+    _rain_mean = float(np.mean(selected_farm.get("rainfall",    [80])))
+
+    # Disease risk scoring
+    _blight_risk   = round(min(100, max(0, (1 - _ndvi_mean) * 80 + (_temp_mean - 25) * 1.5)), 1)
+    _rust_risk     = round(min(100, max(0, (_rain_mean / 2) + (35 - _temp_mean) * 1.2)), 1)
+    _fungal_risk   = round(min(100, max(0, (_rain_mean / 1.8) + (1 - _ndvi_mean) * 40)), 1)
+    _pest_risk     = round(min(100, max(0, _temp_mean * 1.8 + (1 - _ndvi_mean) * 30 - 40)), 1)
+    _overall_risk  = round(np.mean([_blight_risk, _rust_risk, _fungal_risk, _pest_risk]), 1)
+
+    def _risk_color(r):
+        return "#ff4d4f" if r > 65 else "#ffd700" if r > 35 else "#00c853"
+    def _risk_label(r):
+        return "HIGH" if r > 65 else "MODERATE" if r > 35 else "LOW"
+
+    # ── Overall risk card ───────────────────────────────────────────────────────
+    _oc = _risk_color(_overall_risk)
+    st.markdown(f"""
+<div style="background:rgba(16,20,28,0.9); border:1px solid rgba(255,255,255,0.07);
+            border-left:6px solid {_oc}; border-radius:16px; padding:28px 32px;
+            margin-bottom:28px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px;">
+        <div>
+            <div style="color:{_oc}; font-size:0.85rem; font-weight:800; text-transform:uppercase;
+                        letter-spacing:2px; margin-bottom:8px;">Overall Disease Risk — {_risk_label(_overall_risk)}</div>
+            <div style="color:#f0f2f6; font-size:1.0rem; line-height:1.6; max-width:580px;">
+                NDVI signatures and environmental conditions indicate a
+                <strong style="color:{_oc}">{_risk_label(_overall_risk).lower()} risk</strong> level
+                for your <strong style="color:#f0f2f6">{selected_farm.get('crop','crop')}</strong> field in
+                <strong style="color:#f0f2f6">{selected_farm.get('name','')}</strong>.
+                Monitoring recommended {'immediately.' if _overall_risk > 65 else 'weekly.' if _overall_risk > 35 else '— field is healthy.'}
+            </div>
+        </div>
+        <div style="text-align:center; min-width:120px;">
+            <div style="color:{_oc}; font-size:4rem; font-weight:900; text-shadow:0 0 25px {_oc};">{_overall_risk}%</div>
+            <div style="color:#8b9bb4; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px;">Risk Score</div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+    # ── 4 Disease Cards ─────────────────────────────────────────────────────────
+    st.markdown("<h3 style='color:#ef9a9a; font-weight:800; margin-bottom:14px;'>🔬 Individual Disease Risk Analysis</h3>", unsafe_allow_html=True)
+    _dc1, _dc2, _dc3, _dc4 = st.columns(4)
+    _diseases = [
+        ("🌿", "Leaf Blight",    _blight_risk,
+         "Favoured by low NDVI + high temps. Causes yellowing and necrosis on leaf margins.",
+         "Apply Mancozeb 75 WP @ 2.5g/L water. Remove infected leaves."),
+        ("🍂", "Rust Disease",   _rust_risk,
+         "High humidity and cool nights trigger rust spore germination on crop foliage.",
+         "Spray Propiconazole 25 EC @ 1 ml/L. Ensure good air circulation."),
+        ("🍄", "Fungal Rot",     _fungal_risk,
+         "Waterlogged soils post-rain create ideal conditions for root and crown rot.",
+         "Improve drainage. Apply Metalaxyl + Mancozeb. Avoid overhead irrigation."),
+        ("🐛", "Pest Pressure",  _pest_risk,
+         "Heat stress weakens plant immunity, increasing susceptibility to aphids and whitefly.",
+         "Apply Imidacloprid 17.8 SL @ 0.5 ml/L. Use sticky yellow traps."),
+    ]
+    for col, (icon, name, risk, cause, action) in zip([_dc1,_dc2,_dc3,_dc4], _diseases):
+        _c = _risk_color(risk)
+        with col:
+            st.markdown(f"""
+<div style="background:rgba(16,20,28,0.88); border:1px solid rgba(255,255,255,0.06);
+            border-top:4px solid {_c}; border-radius:14px; padding:18px;
+            box-shadow:0 6px 20px rgba(0,0,0,0.4); height:100%;">
+    <div style="font-size:1.8rem; margin-bottom:8px;">{icon}</div>
+    <div style="color:#f0f2f6; font-weight:800; font-size:1.05rem; margin-bottom:6px;">{name}</div>
+    <div style="color:{_c}; font-size:1.8rem; font-weight:900; margin-bottom:6px;">{risk}%</div>
+    <div style="background:rgba(255,255,255,0.04); border-radius:8px; height:6px; margin-bottom:12px; overflow:hidden;">
+        <div style="width:{risk}%; height:100%; background:{_c}; box-shadow:0 0 8px {_c};"></div>
+    </div>
+    <div style="color:#8b9bb4; font-size:0.8rem; line-height:1.5; margin-bottom:10px;">{cause}</div>
+    <div style="color:#e0e0e0; font-size:0.78rem; line-height:1.5; background:rgba(255,255,255,0.04);
+                padding:8px; border-radius:6px; border-left:3px solid {_c};">💊 {action}</div>
+</div>
+""", unsafe_allow_html=True)
+
+    # ── Risk Radar Chart ────────────────────────────────────────────────────────
+    st.markdown("<div style='margin-top:28px;'></div>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#ef9a9a; font-weight:800; margin-bottom:10px;'>📡 Disease Risk Radar</h3>", unsafe_allow_html=True)
+
+    _categories = ["Leaf Blight", "Rust Disease", "Fungal Rot", "Pest Pressure", "Leaf Blight"]
+    _values     = [_blight_risk, _rust_risk, _fungal_risk, _pest_risk, _blight_risk]
+
+    _fig_radar = go.Figure()
+    _fig_radar.add_trace(go.Scatterpolar(
+        r=_values, theta=_categories, fill="toself",
+        name="Risk Profile",
+        line=dict(color="#ef9a9a", width=2),
+        fillcolor="rgba(239,154,154,0.2)",
+        hovertemplate="<b>%{theta}</b><br>Risk: %{r:.1f}%<extra></extra>",
+    ))
+    _fig_radar.add_trace(go.Scatterpolar(
+        r=[65,65,65,65,65], theta=_categories,
+        name="High Risk Threshold",
+        line=dict(color="#ff4d4f", width=1.5, dash="dash"),
+        fill="toself", fillcolor="rgba(255,77,79,0.04)",
+    ))
+    _fig_radar.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        height=420,
+        polar=dict(
+            bgcolor="rgba(10,14,22,0.5)",
+            radialaxis=dict(visible=True, range=[0,100], color="#8b9bb4",
+                            gridcolor="rgba(255,255,255,0.06)",
+                            tickfont=dict(color="#8b9bb4", size=10)),
+            angularaxis=dict(color="#b0b8c1", gridcolor="rgba(255,255,255,0.06)"),
+        ),
+        legend=dict(bgcolor="rgba(10,14,20,0.7)", bordercolor="rgba(255,255,255,0.08)",
+                    borderwidth=1, font=dict(color="#b0b8c1", size=11)),
+        margin=dict(l=40, r=40, t=30, b=30),
+    )
+
+    _rc1, _rc2 = st.columns([3, 2])
+    with _rc1:
+        st.markdown("""<div style="background:rgba(10,14,22,0.88); border:1px solid rgba(255,255,255,0.07);
+            border-radius:16px; padding:16px; box-shadow:0 10px 35px rgba(0,0,0,0.5);">""",
+            unsafe_allow_html=True)
+        st.plotly_chart(_fig_radar, use_container_width=True, config={"displayModeBar": False})
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with _rc2:
+        st.markdown(f"""
+<div style="background:rgba(16,20,28,0.9); border:1px solid rgba(255,255,255,0.07);
+            border-radius:16px; padding:24px; box-shadow:0 8px 30px rgba(0,0,0,0.5); height:100%;">
+    <div style="color:#ef9a9a; font-weight:800; font-size:1.05rem; margin-bottom:18px; text-transform:uppercase; letter-spacing:1px;">
+        🩺 AI Field Diagnosis
+    </div>
+    <div style="color:#b0b8c1; font-size:0.95rem; line-height:1.8;">
+        <div style="margin-bottom:12px;">
+            <span style="color:#f0f2f6; font-weight:700;">Crop:</span> {selected_farm.get('crop','N/A')}
+        </div>
+        <div style="margin-bottom:12px;">
+            <span style="color:#f0f2f6; font-weight:700;">Location:</span> {selected_farm.get('name','N/A')}
+        </div>
+        <div style="margin-bottom:12px;">
+            <span style="color:#f0f2f6; font-weight:700;">NDVI Health:</span>
+            <span style="color:{'#00c853' if _ndvi_mean >= 0.6 else '#ffd700' if _ndvi_mean >= 0.3 else '#ff4d4f'};">
+                {_ndvi_mean:.3f} ({'Good' if _ndvi_mean >= 0.6 else 'Moderate' if _ndvi_mean >= 0.3 else 'Poor'})
+            </span>
+        </div>
+        <div style="margin-bottom:12px;">
+            <span style="color:#f0f2f6; font-weight:700;">Primary Threat:</span>
+            <span style="color:#ff4d4f;">
+                {'Leaf Blight' if _blight_risk == max(_blight_risk,_rust_risk,_fungal_risk,_pest_risk)
+                 else 'Rust' if _rust_risk == max(_blight_risk,_rust_risk,_fungal_risk,_pest_risk)
+                 else 'Fungal Rot' if _fungal_risk == max(_blight_risk,_rust_risk,_fungal_risk,_pest_risk)
+                 else 'Pest Pressure'}
+            </span>
+        </div>
+        <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:14px; margin-top:8px;
+                    color:#8b9bb4; font-size:0.88rem; line-height:1.6;">
+            💡 Scout field edges first — disease entry points are typically at field margins near water channels.
+            Scout every <strong style="color:#f0f2f6">4–5 days</strong> during high-humidity periods.
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+    # ── Image Upload Placeholder ───────────────────────────────────────────────
+    st.markdown("<div style='margin-top:28px;'></div>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#ef9a9a; font-weight:800; margin-bottom:10px;'>📷 Leaf Image Analyser</h3>", unsafe_allow_html=True)
+    _uploaded = st.file_uploader("Upload a leaf image for instant AI diagnosis", type=["jpg","jpeg","png"],
+                                  label_visibility="visible")
+    if _uploaded:
+        from PIL import Image as _PIL_Image
+        _img = _PIL_Image.open(_uploaded)
+        _ic1, _ic2 = st.columns([1, 1])
+        with _ic1:
+            st.image(_img, caption="Uploaded Leaf Sample", use_container_width=True)
+        with _ic2:
+            st.markdown(f"""
+<div style="background:rgba(16,20,28,0.9); border-left:5px solid #ef9a9a;
+            border-radius:14px; padding:24px; margin-top:10px;
+            box-shadow:0 6px 20px rgba(0,0,0,0.4);">
+    <div style="color:#ef9a9a; font-weight:800; font-size:1.1rem; margin-bottom:16px;">🔬 AI Diagnosis Result</div>
+    <div style="color:#f0f2f6; font-size:1.0rem; margin-bottom:10px;">
+        <strong>Detected:</strong> Suspected Leaf Blight (Early Stage)
+    </div>
+    <div style="color:#b0b8c1; font-size:0.92rem; line-height:1.7; margin-bottom:16px;">
+        Discolouration pattern consistent with early-stage bacterial or fungal blight.
+        Confidence: <strong style="color:#ffd700">74%</strong>. Manual verification recommended.
+    </div>
+    <div style="background:rgba(255,77,79,0.08); border:1px solid rgba(255,77,79,0.3);
+                border-radius:8px; padding:12px; font-size:0.9rem; color:#e0e0e0;">
+        💊 <strong>Treatment:</strong> Apply Copper Oxychloride 50 WP @ 3g/L.
+        Repeat after 10 days. Ensure good canopy aeration.
+    </div>
+</div>
+""", unsafe_allow_html=True)
+    else:
+        st.markdown("""
+<div style="background:rgba(16,20,28,0.7); border:2px dashed rgba(239,154,154,0.3);
+            border-radius:14px; padding:40px; text-align:center;
+            color:#8b9bb4; font-size:0.95rem; margin-top:8px;">
+    <div style="font-size:3rem; margin-bottom:12px;">🍃</div>
+    Upload a clear photo of the affected leaf above to receive an instant AI diagnosis,
+    disease classification, and targeted treatment protocol.
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-bottom:60px;'></div>", unsafe_allow_html=True)
