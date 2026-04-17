@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+/* ── Midnight Arboretum Design Tokens ──────────────────────────────────── */
+:root {
+  /* Core surfaces */
+  --surface:              #121412;
+  --surface-container:    #1e201e;
+  --surface-container-low:#1a1c1a;
+  --surface-container-high:#292a28;
+  --surface-container-highest:#333533;
+  --surface-bright:       #383a37;
+  --surface-dim:          #121412;
+
+  /* Primary — forest green */
+  --primary:              #88d982;
+  --primary-container:    #2e7d32;
+  --on-primary:           #003909;
+  --on-primary-container: #cbffc2;
+
+  /* Secondary — muted teal */
+  --secondary:            #b4cad6;
+  --secondary-container:  #374c56;
+  --on-secondary-container:#a6bcc7;
+
+  /* Tertiary — coral accent */
+  --tertiary:             #ffb1c7;
+  --tertiary-container:   #b14b6f;
+
+  /* Outline */
+  --outline:              #8a9485;
+  --outline-variant:      #40493d;
+
+  /* Text */
+  --on-surface:           #e2e3df;
+  --on-surface-variant:   #bfcaba;
+
+  /* Legacy compat */
+  --color-navy:       #0D1B2A;
+  --color-navy-light: #0a1628;
+  --color-blue:       #2a6fdb;
+  --color-blue-dark:  #1a4fa0;
+  --color-green:      #88d982;
+  --color-amber:      #eab308;
+  --color-red:        #ef4444;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: 'Lexend', 'Inter', system-ui, sans-serif;
+  background: #030d1a;
+  color: #e2e3df;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Canvas container */
+canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth spin */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Pulse for disease markers */
+@keyframes pulse-ring {
+  0%   { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2);   opacity: 0; }
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, #ffffff, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass card — legacy */
+.glass {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Midnight Arboretum glass panel */
+.glass-panel {
+  background: rgba(51, 53, 51, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Verdant blur decorative element */
+.verdant-blur {
+  width: 400px;
+  height: 400px;
+  background: #2e7d32;
+  filter: blur(150px);
+  opacity: 0.10;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Primary CTA gradient */
+.btn-primary-gradient {
+  background: linear-gradient(135deg, #88d982, #2e7d32);
+  color: #002204;
+  font-weight: 700;
+  border-radius: 9999px;
+}
+
+/* Sonar animation for alerts */
+@keyframes sonar-ripple {
+  0%   { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(3); opacity: 0; }
+}
+.sonar-wave {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 50%;
+  background: currentColor;
+  z-index: -1;
+  animation: sonar-ripple 2s cubic-bezier(0,0,0.2,1) infinite;
+}
+.sonar-container { position: relative; }

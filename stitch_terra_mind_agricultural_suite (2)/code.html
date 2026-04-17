@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#88d982",
+                    "background": "#121412",
+                    "tertiary-container": "#b14b6f",
+                    "secondary": "#b4cad6",
+                    "on-tertiary-fixed": "#3f001c",
+                    "error-container": "#93000a",
+                    "surface-container-low": "#1a1c1a",
+                    "inverse-on-surface": "#2f312e",
+                    "surface-container-lowest": "#0d0f0d",
+                    "tertiary": "#ffb1c7",
+                    "tertiary-fixed": "#ffd9e2",
+                    "surface-variant": "#333533",
+                    "surface-container": "#1e201e",
+                    "on-primary": "#003909",
+                    "inverse-primary": "#1b6d24",
+                    "on-primary-fixed-variant": "#005312",
+                    "surface-dim": "#121412",
+                    "primary-fixed-dim": "#88d982",
+                    "on-tertiary-container": "#ffedf0",
+                    "error": "#ffb4ab",
+                    "on-secondary-fixed-variant": "#354a53",
+                    "surface-container-high": "#292a28",
+                    "on-secondary": "#1e333c",
+                    "outline-variant": "#40493d",
+                    "on-background": "#e2e3df",
+                    "on-tertiary": "#610931",
+                    "secondary-container": "#374c56",
+                    "on-error": "#690005",
+                    "secondary-fixed-dim": "#b4cad6",
+                    "surface-tint": "#88d982",
+                    "on-primary-container": "#cbffc2",
+                    "on-surface-variant": "#bfcaba",
+                    "primary-fixed": "#a3f69c",
+                    "on-error-container": "#ffdad6",
+                    "outline": "#8a9485",
+                    "inverse-surface": "#e2e3df",
+                    "primary-container": "#2e7d32",
+                    "surface-bright": "#383a37",
+                    "on-primary-fixed": "#002204",
+                    "tertiary-fixed-dim": "#ffb1c7",
+                    "on-surface": "#e2e3df",
+                    "surface-container-highest": "#333533",
+                    "on-tertiary-fixed-variant": "#7f2448",
+                    "secondary-fixed": "#cfe6f2",
+                    "on-secondary-container": "#a6bcc7",
+                    "surface": "#121412",
+                    "on-secondary-fixed": "#071e27"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Lexend"],
+                    "label": ["Lexend"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Lexend', sans-serif; }
+        .glass-card {
+            background: rgba(41, 42, 40, 0.6);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-32">
+<!-- Top Navigation -->
+<nav class="fixed top-0 w-full z-50 bg-emerald-950/80 backdrop-blur-xl flex items-center justify-between px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">forest</span>
+<span class="text-xl font-bold tracking-widest text-primary uppercase">Midnight Arboretum</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant">search</span>
+<span class="material-symbols-outlined text-primary">account_circle</span>
+</div>
+</nav>
+<main class="pt-24 px-6 md:max-w-6xl md:mx-auto">
+<!-- Editorial Header -->
+<header class="mb-12 mt-8">
+<p class="text-primary font-label text-sm uppercase tracking-[0.2em] mb-2">Market Intelligence</p>
+<h1 class="text-5xl md:text-7xl font-headline font-extrabold tracking-tighter text-on-surface mb-4">Paddy Yield &amp; Pricing</h1>
+<div class="h-1 w-24 bg-primary-container rounded-full"></div>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Price Comparison Card -->
+<div class="md:col-span-8 glass-card rounded-xl p-8 relative overflow-hidden flex flex-col justify-between min-h-[400px]">
+<div class="absolute top-0 right-0 p-8 opacity-10">
+<span class="material-symbols-outlined text-9xl">trending_up</span>
+</div>
+<div>
+<h2 class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-8">Live Projection</h2>
+<div class="flex flex-col md:flex-row gap-12 items-baseline">
+<div class="flex flex-col">
+<span class="text-on-surface-variant text-sm mb-1">Today's Price</span>
+<span class="text-4xl md:text-6xl font-bold text-on-surface">$2,450<span class="text-lg text-on-surface-variant ml-2 font-normal">/ton</span></span>
+</div>
+<div class="flex flex-col">
+<span class="text-primary text-sm mb-1">Predicted (10 Days)</span>
+<span class="text-4xl md:text-6xl font-bold text-primary">$2,817<span class="text-lg text-on-primary-container ml-2 font-normal">+15%</span></span>
+</div>
+</div>
+</div>
+<!-- Simple Trend Graph (SVG Visual) -->
+<div class="mt-12 w-full h-32 relative">
+<svg class="w-full h-full preserve-3d" viewbox="0 0 400 100">
+<path d="M0 80 Q 50 85, 100 70 T 200 40 T 300 30 T 400 10" fill="none" stroke="#88d982" stroke-linecap="round" stroke-width="3"></path>
+<path d="M0 80 Q 50 85, 100 70 T 200 40 T 300 30 T 400 10 V 100 H 0 Z" fill="url(#grad1)" opacity="0.2"></path>
+<defs>
+<lineargradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#88d982;stop-opacity:1"></stop>
+<stop offset="100%" style="stop-color:#88d982;stop-opacity:0"></stop>
+</lineargradient>
+</defs>
+<circle cx="400" cy="10" fill="#88d982" r="4"></circle>
+</svg>
+<div class="flex justify-between mt-4 text-[10px] uppercase tracking-tighter text-on-surface-variant font-medium">
+<span>MAY 12 (NOW)</span>
+<span>MAY 15</span>
+<span>MAY 18</span>
+<span>MAY 22 (PREDICTED)</span>
+</div>
+</div>
+</div>
+<!-- AI Insight Card -->
+<div class="md:col-span-4 bg-primary-container rounded-xl p-8 flex flex-col justify-between text-on-primary-container relative overflow-hidden">
+<div class="z-10">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-label text-xs uppercase tracking-widest">AI Advisory</span>
+</div>
+<p class="text-2xl font-semibold leading-snug">"Wait 7 days to sell for 15% more profit"</p>
+<p class="mt-4 text-sm opacity-80 leading-relaxed">Based on regional monsoon patterns and trade volume in Sector 7G, prices are expected to peak by the next lunar cycle.</p>
+</div>
+<button class="mt-8 bg-on-primary-container text-on-primary py-4 px-6 rounded-full font-bold flex items-center justify-between group">
+                    View Market Logic
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<!-- Decorative Blur -->
+<div class="absolute -bottom-10 -right-10 w-40 h-40 bg-primary opacity-20 blur-3xl"></div>
+</div>
+<!-- Profit Calculator Section -->
+<div class="md:col-span-12 mt-6">
+<div class="bg-surface-container-low rounded-xl p-8">
+<div class="flex flex-col md:flex-row items-center justify-between gap-8">
+<div class="max-w-md">
+<h3 class="text-2xl font-headline font-bold mb-2">Profit Calculator</h3>
+<p class="text-on-surface-variant text-sm">Estimate your net gains based on current storage and logistics costs.</p>
+</div>
+<div class="w-full md:w-auto flex flex-col md:flex-row gap-4">
+<div class="flex flex-col">
+<label class="text-[10px] uppercase tracking-widest text-on-surface-variant mb-2 ml-1">Volume (Tons)</label>
+<input class="bg-surface-container-lowest border-none border-b border-outline-variant/20 focus:ring-primary rounded-lg text-on-surface p-4 min-w-[150px]" type="number" value="120"/>
+</div>
+<div class="flex flex-col">
+<label class="text-[10px] uppercase tracking-widest text-on-surface-variant mb-2 ml-1">Storage Type</label>
+<select class="bg-surface-container-lowest border-none border-b border-outline-variant/20 focus:ring-primary rounded-lg text-on-surface p-4 min-w-[200px]">
+<option>Arboretum Cold Storage</option>
+<option>Ambient Warehouse</option>
+</select>
+</div>
+<div class="flex items-end">
+<button class="bg-surface-container-highest hover:bg-surface-bright text-on-surface px-8 py-4 rounded-lg font-semibold transition-colors w-full md:w-auto">Calculate</button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 pt-12 border-t border-outline-variant/10">
+<div class="p-6 bg-surface-container-lowest rounded-xl">
+<p class="text-on-surface-variant text-xs mb-2 uppercase">Net Expected Revenue</p>
+<p class="text-2xl font-bold text-primary">$338,040</p>
+</div>
+<div class="p-6 bg-surface-container-lowest rounded-xl">
+<p class="text-on-surface-variant text-xs mb-2 uppercase">Logistics Cost</p>
+<p class="text-2xl font-bold text-tertiary">$12,400</p>
+</div>
+<div class="p-6 bg-surface-container-lowest rounded-xl">
+<p class="text-on-surface-variant text-xs mb-2 uppercase">Market Delta</p>
+<p class="text-2xl font-bold text-secondary">+$44,040</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Regional Map Card -->
+<div class="md:col-span-12 mt-6">
+<div class="relative h-[300px] w-full rounded-xl overflow-hidden grayscale contrast-125 opacity-60">
+<img alt="Satellite view" class="w-full h-full object-cover" data-alt="topographic satellite map of agricultural lands with glowing heat map data overlays in emerald green" data-location="Northern Plains Agriculture Hub" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmzWduUprqgRp2Rja1nUvkgVTqLkQqn8zafLRTKHHehnXGRqhWTP5gPiaEl5BwYMACJRBxMUWB4LcrXoyYvJ7HtvXUSjKYCFOVrA2GORMj9FZmHUjWTVouKQpiL9D7I9NH0T31pgLDiBxv_vcRlRYYb1q81P6euBZGoqgNuVB37HrLdiFSuak8BuRmZrXPu9ZqhDUYtLD1zyNIuC-7iR54zNO92VSWhGmCR_tNecDfPzT0stSVnHHpKuMP2u2n-U_hFlr-xyM0JTo"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
+<div class="absolute bottom-6 left-6">
+<p class="text-on-surface font-bold text-lg">Sector 7G Activity Hub</p>
+<p class="text-primary text-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">sensors</span>
+                            34 Active Harvesting Drones
+                        </p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<footer class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-zinc-950/90 backdrop-blur-2xl z-50 rounded-t-[1.5rem] shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
+<div class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400 cursor-pointer">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400 cursor-pointer">
+<span class="material-symbols-outlined">satellite_alt</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Satellite</span>
+</div>
+<div class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400 cursor-pointer">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">AI Assistant</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-emerald-800/40 text-emerald-300 rounded-2xl px-4 py-1.5 transition-all cursor-pointer">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Market</span>
+</div>
+<div class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400 cursor-pointer">
+<span class="material-symbols-outlined">chat</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Advisory</span>
+</div>
+</footer>
+</body></html>

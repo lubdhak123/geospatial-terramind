@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#88d982",
+                    "background": "#121412",
+                    "tertiary-container": "#b14b6f",
+                    "secondary": "#b4cad6",
+                    "on-tertiary-fixed": "#3f001c",
+                    "error-container": "#93000a",
+                    "surface-container-low": "#1a1c1a",
+                    "inverse-on-surface": "#2f312e",
+                    "surface-container-lowest": "#0d0f0d",
+                    "tertiary": "#ffb1c7",
+                    "tertiary-fixed": "#ffd9e2",
+                    "surface-variant": "#333533",
+                    "surface-container": "#1e201e",
+                    "on-primary": "#003909",
+                    "inverse-primary": "#1b6d24",
+                    "on-primary-fixed-variant": "#005312",
+                    "surface-dim": "#121412",
+                    "primary-fixed-dim": "#88d982",
+                    "on-tertiary-container": "#ffedf0",
+                    "error": "#ffb4ab",
+                    "on-secondary-fixed-variant": "#354a53",
+                    "surface-container-high": "#292a28",
+                    "on-secondary": "#1e333c",
+                    "outline-variant": "#40493d",
+                    "on-background": "#e2e3df",
+                    "on-tertiary": "#610931",
+                    "secondary-container": "#374c56",
+                    "on-error": "#690005",
+                    "secondary-fixed-dim": "#b4cad6",
+                    "surface-tint": "#88d982",
+                    "on-primary-container": "#cbffc2",
+                    "on-surface-variant": "#bfcaba",
+                    "primary-fixed": "#a3f69c",
+                    "on-error-container": "#ffdad6",
+                    "outline": "#8a9485",
+                    "inverse-surface": "#e2e3df",
+                    "primary-container": "#2e7d32",
+                    "surface-bright": "#383a37",
+                    "on-primary-fixed": "#002204",
+                    "tertiary-fixed-dim": "#ffb1c7",
+                    "on-surface": "#e2e3df",
+                    "surface-container-highest": "#333533",
+                    "on-tertiary-fixed-variant": "#7f2448",
+                    "secondary-fixed": "#cfe6f2",
+                    "on-secondary-container": "#a6bcc7",
+                    "surface": "#121412",
+                    "on-secondary-fixed": "#071e27"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Lexend"],
+                    "label": ["Lexend"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(18, 20, 18, 0.8);
+            backdrop-filter: blur(20px);
+        }
+        .scan-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #88d982, transparent);
+            box-shadow: 0 0 15px #88d982;
+            animation: scan 3s infinite linear;
+        }
+        @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body min-h-screen overflow-x-hidden">
+<!-- Top Navigation -->
+<header class="fixed top-0 w-full z-50 bg-emerald-950/80 backdrop-blur-xl flex items-center justify-between px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-2xl" data-icon="forest">forest</span>
+<h1 class="text-xl font-bold tracking-widest text-primary uppercase font-headline">Midnight Arboretum</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-emerald-900/30 transition-colors">
+<span class="material-symbols-outlined text-on-surface" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-5xl mx-auto">
+<!-- Section Header -->
+<div class="mb-12">
+<span class="text-primary font-label text-xs tracking-[0.2em] uppercase block mb-2">Neural Diagnostics</span>
+<h2 class="text-4xl font-headline font-bold text-on-surface tracking-tight">Disease Detection</h2>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- Analysis Canvas (Asymmetric Layout) -->
+<div class="lg:col-span-7 space-y-6">
+<div class="relative group aspect-[4/3] rounded-xl overflow-hidden shadow-2xl bg-surface-container-low border border-outline-variant/15">
+<img alt="Diseased Leaf" class="w-full h-full object-cover opacity-80" data-alt="Macro close-up of a vibrant green tomato leaf showing yellowing edges and dark necrotic spots indicative of bacterial infection, moody lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTG3VfpruUM5r1XYsu0n63Q50m6Asy3CXbSeGPTOF9dsGZ0GwvmnlzSwas5PxjpwuzzsDhdZb64V6iHXfTICcgc7nvL0mYPwb-PxZmfZMT-B9mf8S0Fv9qdyz7WDf1bd8KOUGz8q0PycO3wZSjaAq3u-psVPuAtkLE70UCsidvZynIYdH7ScEy1x3fXxt9cc47UBRzdWrfRS5MjA16XZKIQgIuqtGc03BEZcHpHM3BTM7OQ3_jks1t_fV4w92xjH0vXz5XB13CptU"/>
+<!-- Neural Overlay -->
+<div class="absolute inset-0 bg-primary/10 mix-blend-overlay"></div>
+<div class="absolute inset-0 pointer-events-none">
+<div class="scan-line absolute w-full z-10"></div>
+<!-- UI Elements Over Image -->
+<div class="absolute top-6 left-6 flex gap-2">
+<span class="bg-background/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-primary border border-primary/20">TARGET_ID: TOM-042</span>
+<span class="bg-background/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-tertiary border border-tertiary/20">STATUS: ANALYZING</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 bg-primary-container text-on-primary-container py-5 px-6 rounded-full font-bold hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/5">
+<span class="material-symbols-outlined" data-icon="photo_camera">photo_camera</span>
+                        Capture New
+                    </button>
+<button class="flex items-center justify-center gap-3 bg-surface-container-high text-on-surface py-5 px-6 rounded-full font-bold hover:scale-[1.02] active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="upload_file">upload_file</span>
+                        Upload Image
+                    </button>
+</div>
+</div>
+<!-- Results Panel -->
+<div class="lg:col-span-5 space-y-6">
+<!-- Confidence Card -->
+<div class="p-8 rounded-xl bg-surface-container-low border border-outline-variant/15 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-8xl" data-icon="coronavirus">coronavirus</span>
+</div>
+<div class="relative z-10">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-headline text-lg font-bold text-on-surface-variant">Primary Diagnosis</h3>
+<span class="text-xs bg-tertiary-container/20 text-tertiary px-2 py-0.5 rounded border border-tertiary/20">High Priority</span>
+</div>
+<h4 class="text-3xl font-headline font-extrabold text-primary mb-1">Bacterial Blight</h4>
+<div class="flex items-center gap-2 mb-6">
+<div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[89%] rounded-full shadow-[0_0_8px_#88d982]"></div>
+</div>
+<span class="text-sm font-bold text-primary">89%</span>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed mb-6">
+                            Identified Xanthomonas campestris pv. vesicatoria. This pathogen spreads rapidly through irrigation and wind-driven rain. Immediate isolation is advised.
+                        </p>
+</div>
+</div>
+<!-- Treatment Steps -->
+<div class="p-8 rounded-xl bg-surface-container-high border border-outline-variant/5">
+<h3 class="font-headline text-sm font-bold text-on-surface-variant mb-6 flex items-center gap-2 uppercase tracking-widest">
+<span class="material-symbols-outlined text-primary text-base" data-icon="medication">medication</span>
+                        Suggested Treatment
+                    </h3>
+<ul class="space-y-6">
+<li class="flex gap-4">
+<span class="w-6 h-6 rounded-full bg-surface-container-highest flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-primary">01</span>
+<div>
+<p class="text-sm font-bold text-on-surface">Pruning &amp; Disposal</p>
+<p class="text-xs text-on-surface-variant">Remove and burn infected leaves immediately. Do not compost.</p>
+</div>
+</li>
+<li class="flex gap-4">
+<span class="w-6 h-6 rounded-full bg-surface-container-highest flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-primary">02</span>
+<div>
+<p class="text-sm font-bold text-on-surface">Copper-based Fungicide</p>
+<p class="text-xs text-on-surface-variant">Apply a protective spray at 7-10 day intervals during wet periods.</p>
+</div>
+</li>
+<li class="flex gap-4">
+<span class="w-6 h-6 rounded-full bg-surface-container-highest flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-primary">03</span>
+<div>
+<p class="text-sm font-bold text-on-surface">Irrigation Management</p>
+<p class="text-xs text-on-surface-variant">Switch to drip irrigation to keep foliage dry during recovery.</p>
+</div>
+</li>
+</ul>
+</div>
+<button class="w-full bg-surface-container-highest py-4 rounded-full font-bold text-primary hover:bg-surface-bright transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="refresh">refresh</span>
+                    Scan Again
+                </button>
+</div>
+</div>
+</main>
+<!-- Navigation Shell -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-zinc-950/90 backdrop-blur-2xl rounded-t-[1.5rem] z-50 shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
+<a class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400" href="#">
+<span class="material-symbols-outlined" data-icon="satellite_alt">satellite_alt</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Satellite</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-emerald-800/40 text-emerald-300 rounded-2xl px-4 py-1.5 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="coronavirus" style="font-variation-settings: 'FILL' 1;">coronavirus</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Detection</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400" href="#">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Market</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Advisory</span>
+</a>
+</nav>
+<!-- Decorative Verdent Blur -->
+<div class="fixed top-1/4 -right-20 w-[400px] h-[400px] bg-primary-container/10 rounded-full blur-[150px] pointer-events-none -z-10"></div>
+<div class="fixed -bottom-20 -left-20 w-[300px] h-[300px] bg-tertiary-container/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
+</body></html>

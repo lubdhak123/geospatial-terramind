@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Arboretum - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#ffb1c7",
+                        "secondary-container": "#374c56",
+                        "on-secondary-fixed": "#071e27",
+                        "tertiary-fixed": "#ffd9e2",
+                        "on-tertiary-fixed-variant": "#7f2448",
+                        "on-tertiary": "#610931",
+                        "surface-variant": "#333533",
+                        "primary": "#88d982",
+                        "primary-fixed": "#a3f69c",
+                        "primary-fixed-dim": "#88d982",
+                        "error-container": "#93000a",
+                        "on-primary-fixed": "#002204",
+                        "on-secondary": "#1e333c",
+                        "surface-dim": "#121412",
+                        "outline-variant": "#40493d",
+                        "surface": "#121412",
+                        "surface-container-highest": "#333533",
+                        "surface-container-high": "#292a28",
+                        "primary-container": "#2e7d32",
+                        "tertiary-fixed-dim": "#ffb1c7",
+                        "on-secondary-fixed-variant": "#354a53",
+                        "on-error-container": "#ffdad6",
+                        "surface-tint": "#88d982",
+                        "on-secondary-container": "#a6bcc7",
+                        "inverse-surface": "#e2e3df",
+                        "inverse-on-surface": "#2f312e",
+                        "secondary-fixed": "#cfe6f2",
+                        "on-primary-fixed-variant": "#005312",
+                        "error": "#ffb4ab",
+                        "on-surface-variant": "#bfcaba",
+                        "background": "#121412",
+                        "surface-container": "#1e201e",
+                        "secondary": "#b4cad6",
+                        "on-surface": "#e2e3df",
+                        "on-primary": "#003909",
+                        "tertiary-container": "#b14b6f",
+                        "surface-container-low": "#1a1c1a",
+                        "on-error": "#690005",
+                        "outline": "#8a9485",
+                        "surface-container-lowest": "#0d0f0d",
+                        "surface-bright": "#383a37",
+                        "on-tertiary-fixed": "#3f001c",
+                        "on-tertiary-container": "#ffedf0",
+                        "secondary-fixed-dim": "#b4cad6",
+                        "inverse-primary": "#1b6d24",
+                        "on-background": "#e2e3df",
+                        "on-primary-container": "#cbffc2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Lexend"],
+                        "body": ["Lexend"],
+                        "label": ["Lexend"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Lexend', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(51, 53, 51, 0.6);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    @keyframes weather-pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    @keyframes sonar-ripple {
+        0% { transform: scale(1); opacity: 0.8; }
+        100% { transform: scale(3); opacity: 0; }
+    }
+    @keyframes breathing {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.25); opacity: 0.7; }
+    }
+    .animate-weather { animation: weather-pulse 3s ease-in-out infinite; }
+    .sonar-container { position: relative; }
+    .sonar-wave {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border-radius: 50%;
+        background: currentColor;
+        z-index: -1;
+        animation: sonar-ripple 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+    .animate-breathing { animation: breathing 2s ease-in-out infinite; }
+</style></head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-[#121412]/80 backdrop-blur-xl fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#88d982]" data-icon="location_on">location_on</span>
+<div class="flex flex-col">
+<span class="text-xl font-bold tracking-tight text-[#88d982]">The Arboretum</span>
+<span class="text-[10px] text-on-surface-variant uppercase tracking-widest">Kuttanad, India</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-high ring-2 ring-primary/20">
+<img alt="User profile avatar" data-alt="Close up portrait of a South Asian agricultural scientist in a dark green utility jacket with a soft blurred greenhouse background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9E9O6vANV0apZMGia3hmRR3m0isIiacC___zR3Kxy2mmLN5B3plEE0M9-EuSXkjqB9bthj-OD5XLm1w7ZGDouwaWtsrndrVjy6U1gk0t53IKFYYjEGY0cDZ7aIbTQ8Y7hJGQUWY1DzkAhlR2WhZmfu61NwFA6l6QpZSgEdsUzrc99KwhVmYvh8L0QIhAVl82jnlupo3IBhGFZrP9l1xRAFL35yNdrFy_2V5Zket3PqLkwd3ayNsA8Rp8fCUZVP7SlL1Tiuh3g_x8"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 px-6 max-w-7xl mx-auto space-y-12">
+<!-- Live Status Hero -->
+<section class="relative overflow-hidden py-12 rounded-xl">
+<!-- Verdent Blur Background -->
+<div class="absolute -top-24 -left-24 w-96 h-96 bg-primary-container opacity-10 blur-[150px] rounded-full"></div>
+<div class="absolute -bottom-24 -right-24 w-96 h-96 bg-primary opacity-5 blur-[150px] rounded-full animate-breathing"></div>
+<div class="relative z-10 space-y-4">
+<span class="label-md text-on-surface-variant uppercase tracking-[0.2em] font-medium text-xs">Current Environment</span>
+<h1 class="text-4xl md:text-6xl font-extrabold text-on-surface leading-tight max-w-3xl">
+                    Paddy Crop <span class="text-primary italic">Flourishing</span> in the Monsoon
+                </h1>
+<p class="text-on-surface-variant text-lg max-w-xl">
+                    The precipitation levels are currently optimal for the vegetative phase of the PR126 variety.
+                </p>
+</div>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Weather Card (Span 4) -->
+<div class="md:col-span-4 bg-surface-container-low p-6 rounded-xl relative overflow-hidden flex flex-col justify-between min-h-[280px]">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-4xl animate-weather" data-icon="cloudy_snowing">cloudy_snowing</span>
+<div class="text-right">
+<div class="text-5xl font-bold text-on-surface">28°C</div>
+<div class="text-on-surface-variant text-sm">Thunderstorms</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2 mt-auto">
+<div class="bg-surface-container-lowest p-3 rounded-lg text-center">
+<div class="text-[10px] text-on-surface-variant uppercase mb-1">Humidity</div>
+<div class="font-bold text-on-surface">84%</div>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg text-center">
+<div class="text-[10px] text-on-surface-variant uppercase mb-1">Wind</div>
+<div class="font-bold text-on-surface">12km/h</div>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-lg text-center">
+<div class="text-[10px] text-on-surface-variant uppercase mb-1">UV</div>
+<div class="font-bold text-primary">Low</div>
+</div>
+</div>
+</div>
+<!-- Main Field Map (Span 8) -->
+<div class="md:col-span-8 bg-surface-container-low rounded-xl overflow-hidden relative min-h-[400px]">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-50 grayscale brightness-50" data-alt="Satellite top-down view of geometric rice paddy fields in a tropical region with deep shadows and dark greens" data-location="Kuttanad" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgXyUwai4RdHGJWKndqWLNkEu9GCcGMFVgzAp7u-l8qKCnfjSR2DNsOH75N7O8kUxHvmqHUZrwtUzwMMdgcKNZVK0xBTe2NzdlfQT1Z4NNjD79wZhag5UhBtMPSCRtzhkqnQQSEcOdpiMSrSL2Y9E9URwAg7C27EpGAspBeoa__MvutXqPL_8Bca8ZqmjQ--Dckrd2UHYr8GCa19z3s1QMgDXJ0F4JJQgxWJaSECOHmdEeHqgr7y-m8YYZJwtCmJbTVDj2WcZRrLY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+</div>
+<!-- Interactive Overlays -->
+<div class="absolute top-6 left-6 z-10 glass-panel px-4 py-2 rounded-full border border-outline-variant/10">
+<div class="flex items-center gap-2">
+<div class="sonar-container flex items-center justify-center">
+<div class="w-2 h-2 rounded-full bg-primary relative z-10"></div>
+<div class="sonar-wave text-primary"></div>
+</div>
+<span class="text-xs font-semibold uppercase tracking-widest text-on-surface">Live Field Map</span>
+</div>
+</div>
+<div class="absolute bottom-6 right-6 z-10 space-y-2">
+<div class="flex items-center gap-3 bg-surface-container-highest/80 backdrop-blur-md p-3 rounded-xl">
+<div class="w-3 h-3 rounded-full bg-primary animate-breathing"></div>
+<span class="text-xs text-on-surface">Optimal Health (82%)</span>
+</div>
+<div class="flex items-center gap-3 bg-surface-container-highest/80 backdrop-blur-md p-3 rounded-xl">
+<div class="w-3 h-3 rounded-full bg-yellow-400 animate-breathing"></div>
+<span class="text-xs text-on-surface">Monitoring Needed (18%)</span>
+</div>
+</div>
+</div>
+<!-- TerraMind AI recommendations (Span 5) -->
+<div class="md:col-span-5 bg-surface-container-low p-8 rounded-xl space-y-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="smart_toy">smart_toy</span>
+<h3 class="text-xl font-bold">TerraMind Insights</h3>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-4 bg-surface-container-highest rounded-xl hover:bg-surface-bright transition-all cursor-pointer group">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="water_drop">water_drop</span>
+<div>
+<div class="text-sm font-semibold">Irrigation needed</div>
+<div class="text-xs text-on-surface-variant">North-east quadrant drying faster</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-highest rounded-xl hover:bg-surface-bright transition-all cursor-pointer group">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="health_and_safety">health_and_safety</span>
+<div>
+<div class="text-sm font-semibold">Disease risk low</div>
+<div class="text-xs text-on-surface-variant">Fungal spores suppressed by current temp</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-highest rounded-xl hover:bg-surface-bright transition-all cursor-pointer group">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="science">science</span>
+<div>
+<div class="text-sm font-semibold">Nitrogen check</div>
+<div class="text-xs text-on-surface-variant">Schedule leaf color chart test for Mon</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Soil/Yield stats (Span 7) -->
+<div class="md:col-span-7 grid grid-cols-2 gap-6">
+<div class="bg-surface-container-low rounded-xl flex flex-col justify-between border-l-4 border-primary relative overflow-hidden">
+<img alt="Close-up of rich, moist dark fertile soil texture" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvBVbpL1Q_WefuW1lFQq91sBdoDpoVCKY98cm4ILc4PXa_gOwQlJbc6yddrqMKCbzSjPFUtQWkSLqESl9SzQBe81nFHuemPFAlP44InZ2CoiOoA2u6f06PmLN8SXlGDvO5YjRC0n5D3k-7xCoX7x5UxaACKA6F3hdqJXgM4OyBlyer0EhZneImRbpv7tLxiJvSorjSYpSqnvFcEhpGd52IZ32uUuTK7CIflStrA24213A5wfl3Y_iEwKDoLiuL4zn1iEA9SMxZuhg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="relative z-10 p-6">
+<div class="text-[10px] text-white uppercase tracking-widest font-bold drop-shadow-md">Soil pH</div>
+<div class="mt-4">
+<div class="text-4xl font-bold text-white drop-shadow-md">6.4</div>
+<div class="text-xs text-primary mt-1 flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_flat">trending_flat</span>
+                            Stable
+                        </div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-xl flex flex-col justify-between border-l-4 border-primary-container relative overflow-hidden">
+<img alt="Vibrant green paddy leaf surface close-up with dew drops" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArbiVWnhmYSojbIBtYRruNL79tZj5-kHiQo4PaFt20ybF0kfD-tGt6Sw7LKmdwuFvLbAVnnZCgkizsmZL6mbeEo2CUnnm4yac8tYiun86OtjTMjYxQf-Ml9AKsentCMZB5uY9AmlQUtMMRg9sRgHCbNiXHEGuxnRffCcwG75t4WTkjK3rLjhv4T9H1YaRx0-M2yUWM8g96SZNKND9bEZmNJML5cRs8tA9I6KlofKxBG1wmOiHgNRnpzFDDzZYuFThm8ZoUvIMuaI0"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="relative z-10 p-6">
+<div class="text-[10px] text-white uppercase tracking-widest font-bold drop-shadow-md">Leaf Area</div>
+<div class="mt-4">
+<div class="text-4xl font-bold text-white drop-shadow-md">12.4</div>
+<div class="text-xs text-primary mt-1 flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+                            +0.8 LAI
+                        </div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-xl flex flex-col justify-between border-l-4 border-tertiary relative overflow-hidden">
+<img alt="Warm golden sunbeams breaking through clouds over a green rice field" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2n_OS7MOdJp1KWBxZvhb9YgCeaMLmpimO55a-MtYuAJqiW6OffeaX8whmFkz1JTK0JEZDQAlM9TiKStlBOZCv87_mNJxZc4QEh5enCrpYVbCoPGx23u7p1A8p91TP3Ob9gAlbBwzEa4xYlKOHR6dxLCfiqKUO4x8ZD5IX_-yePcFBIPROc6on_pWUNn5dEIyI1VchFaJk6Kaqo3uWucl4O3RksZ4dYkexHfvmRue8TJGCaP81-_LbYZmbsq0cKv-yhqZU3SCZZR8"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="relative z-10 p-6">
+<div class="text-[10px] text-white uppercase tracking-widest font-bold drop-shadow-md">Sunlight</div>
+<div class="mt-4">
+<div class="text-4xl font-bold text-white drop-shadow-md">5.2<span class="text-lg text-white/80 ml-1">h</span></div>
+<div class="text-xs text-white/90 mt-1 flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-[14px]" data-icon="history">history</span>
+                            Below Avg
+                        </div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-xl flex flex-col justify-between border-l-4 border-white relative overflow-hidden">
+<img alt="Bountiful harvest of golden paddy grains in a field" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt9KztPfEbSQu_YH7yzzFkCVCpFc-hGti7RUH-n0Apsn62Baxlo-b1qG8Ce_YJvLQElO33yMH-afmxqQ7eFzPGWzcdrCNiqy3aZ3cpg_r8jSi-yI_32wFPDc6K5HJY_E9GvNW_awdj51i6Rz46epnmjeziySEwNtH3-BwVeydKgjYDy38ogXcKBqVdolHSrRRsCVxQOC-nhq4DJ-t_4ayQpisfbR9z5qtYycW53EVr5WUpM7BUjpSDOGdsMKS3qHdmZwrURNzh2bw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="relative z-10 p-6">
+<div class="text-[10px] text-white uppercase tracking-widest font-bold drop-shadow-md">Yield Gap</div>
+<div class="mt-4">
+<div class="text-4xl font-bold text-white drop-shadow-md">0.8</div>
+<div class="text-xs text-white/90 mt-1 font-medium">tons/ha from target</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full h-20 flex justify-around items-center px-8 pb-safe bg-[#1a1c1a]/70 backdrop-blur-2xl z-50 rounded-t-[1.5rem] shadow-[0_-4px_20px_rgba(13,15,13,0.4)]">
+<a class="flex flex-col items-center justify-center bg-gradient-to-br from-[#88d982] to-[#2e7d32] text-[#002204] rounded-full p-3 scale-110 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="potted_plant">potted_plant</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#bfcaba] p-3 hover:text-[#88d982] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#bfcaba] p-3 hover:text-[#88d982] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#bfcaba] p-3 hover:text-[#88d982] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+</a>
+</nav>
+</body></html>

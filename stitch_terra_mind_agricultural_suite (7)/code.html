@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#88d982",
+                    "background": "#121412",
+                    "tertiary-container": "#b14b6f",
+                    "secondary": "#b4cad6",
+                    "on-tertiary-fixed": "#3f001c",
+                    "error-container": "#93000a",
+                    "surface-container-low": "#1a1c1a",
+                    "inverse-on-surface": "#2f312e",
+                    "surface-container-lowest": "#0d0f0d",
+                    "tertiary": "#ffb1c7",
+                    "tertiary-fixed": "#ffd9e2",
+                    "surface-variant": "#333533",
+                    "surface-container": "#1e201e",
+                    "on-primary": "#003909",
+                    "inverse-primary": "#1b6d24",
+                    "on-primary-fixed-variant": "#005312",
+                    "surface-dim": "#121412",
+                    "primary-fixed-dim": "#88d982",
+                    "on-tertiary-container": "#ffedf0",
+                    "error": "#ffb4ab",
+                    "on-secondary-fixed-variant": "#354a53",
+                    "surface-container-high": "#292a28",
+                    "on-secondary": "#1e333c",
+                    "outline-variant": "#40493d",
+                    "on-background": "#e2e3df",
+                    "on-tertiary": "#610931",
+                    "secondary-container": "#374c56",
+                    "on-error": "#690005",
+                    "secondary-fixed-dim": "#b4cad6",
+                    "surface-tint": "#88d982",
+                    "on-primary-container": "#cbffc2",
+                    "on-surface-variant": "#bfcaba",
+                    "primary-fixed": "#a3f69c",
+                    "on-error-container": "#ffdad6",
+                    "outline": "#8a9485",
+                    "inverse-surface": "#e2e3df",
+                    "primary-container": "#2e7d32",
+                    "surface-bright": "#383a37",
+                    "on-primary-fixed": "#002204",
+                    "tertiary-fixed-dim": "#ffb1c7",
+                    "on-surface": "#e2e3df",
+                    "surface-container-highest": "#333533",
+                    "on-tertiary-fixed-variant": "#7f2448",
+                    "secondary-fixed": "#cfe6f2",
+                    "on-secondary-container": "#a6bcc7",
+                    "surface": "#121412",
+                    "on-secondary-fixed": "#071e27"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Lexend"],
+                    "label": ["Lexend"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Lexend', sans-serif;
+            background-color: #121412;
+            color: #e2e3df;
+        }
+        .glass-panel {
+            background: rgba(41, 42, 40, 0.6);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface">
+<!-- TopAppBar -->
+<header class="bg-emerald-950/80 backdrop-blur-xl fixed top-0 w-full z-50 flex items-center justify-between px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-emerald-400" data-icon="forest">forest</span>
+<h1 class="font-lexend tracking-tight text-emerald-50 text-xl font-bold tracking-widest text-emerald-400 uppercase">Midnight Arboretum</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:bg-emerald-900/30 transition-colors p-2 rounded-full scale-95 active:duration-100">
+<span class="material-symbols-outlined text-emerald-400" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-7xl mx-auto space-y-12">
+<!-- Welcome Hero Section (Asymmetric Editorial Layout) -->
+<section class="flex flex-col md:flex-row gap-8 items-end">
+<div class="flex-1 space-y-2">
+<span class="text-primary font-label text-xs tracking-[0.2em] uppercase">Homestead View</span>
+<h2 class="text-5xl md:text-7xl font-headline font-bold text-on-background leading-tight">Terra Mind Dashboard</h2>
+</div>
+<div class="hidden md:block w-32 h-32 bg-primary/10 rounded-full blur-3xl translate-x-12 translate-y-6"></div>
+</section>
+<!-- Main Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Livestock Health (Large Image Focus) -->
+<div class="md:col-span-8 group relative overflow-hidden rounded-xl bg-surface-container-low">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-60 grayscale-[0.3] group-hover:scale-105 transition-transform duration-700" data-alt="Premium healthy cattle grazing in a dark misty meadow at twilight, soft atmospheric lighting emphasizing muscle texture and health" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA91IfNZc_pt2XhCuzpt1ycIRnZEFylC85IRb3nQVsO3VbBRzLWfAp-7fhPcu_aRHOsvNaaWLxMW6ToklCcALOcrZ0WYXrqZ3qjoxBuT3oFloeJ_7iMfkWZtrl_heENtaU4FAfkM0UypU0WGd6gGN55wRyukzu-KgkDipEq_hHMuX7flv3Cpt1wyEMQzmiZrZtwunQXYI2BH8ujfwvRAlUES6RmTY94o9lCT54AyblqBzId9Ulyh4-pzyVvKxtDsUqodAcch6wVvEU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+</div>
+<div class="relative z-10 p-8 h-full flex flex-col justify-end min-h-[400px]">
+<div class="flex justify-between items-end">
+<div>
+<span class="inline-block px-3 py-1 bg-primary text-on-primary text-[10px] font-bold rounded-full mb-3 tracking-widest uppercase">Livestock Status</span>
+<h3 class="text-4xl font-headline font-semibold text-on-surface">Herd Alpha Optimal</h3>
+<p class="text-on-surface-variant max-w-md mt-2">Biometric sensors report 98.4% health across the sector. Calving season ready.</p>
+</div>
+<div class="flex gap-2">
+<div class="bg-surface-container-highest/80 backdrop-blur-md p-4 rounded-xl flex flex-col items-center">
+<span class="text-primary text-2xl font-bold">142</span>
+<span class="text-[10px] text-on-surface-variant uppercase tracking-wider">Head</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Energy & Water Metrics (Compact Vertical) -->
+<div class="md:col-span-4 space-y-6">
+<!-- Water Usage Card -->
+<div class="bg-surface-container-high rounded-xl p-6 flex flex-col justify-between h-[188px]">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="water_drop">water_drop</span>
+<span class="text-[10px] text-primary/60 font-label tracking-widest uppercase">Resources</span>
+</div>
+<div>
+<div class="flex items-baseline gap-2">
+<h4 class="text-3xl font-headline font-bold">12.4k</h4>
+<span class="text-on-surface-variant text-sm">Liters / Day</span>
+</div>
+<div class="w-full bg-surface-container-lowest h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="bg-primary h-full w-[65%] rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Energy Usage Card -->
+<div class="bg-surface-container-high rounded-xl p-6 flex flex-col justify-between h-[188px]">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-tertiary text-3xl" data-icon="bolt">bolt</span>
+<span class="text-[10px] text-tertiary/60 font-label tracking-widest uppercase">Grid Stats</span>
+</div>
+<div>
+<div class="flex items-baseline gap-2">
+<h4 class="text-3xl font-headline font-bold">94%</h4>
+<span class="text-on-surface-variant text-sm">Solar Reliance</span>
+</div>
+<div class="w-full bg-surface-container-lowest h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="bg-tertiary h-full w-[94%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Equipment Health (Asymmetric Flex) -->
+<div class="md:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-low p-6 rounded-xl flex items-center gap-6">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl" data-icon="agriculture">agriculture</span>
+</div>
+<div>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest">Tractor 01</p>
+<h5 class="text-lg font-headline font-medium">Engine Healthy</h5>
+<div class="flex items-center gap-2 mt-1">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="text-xs text-on-surface-variant">Maintenance in 12h</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl flex items-center gap-6">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl" data-icon="drone">precision_manufacturing</span>
+</div>
+<div>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest">Irrigation Drones</p>
+<h5 class="text-lg font-headline font-medium">Charging (82%)</h5>
+<div class="flex items-center gap-2 mt-1">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="text-xs text-on-surface-variant">4 Units Active</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl flex items-center gap-6">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-error text-2xl" data-icon="settings_input_component">settings_input_component</span>
+</div>
+<div>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest">Well Pump 04</p>
+<h5 class="text-lg font-headline font-medium text-error">Low Pressure</h5>
+<div class="flex items-center gap-2 mt-1">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="text-xs text-on-surface-variant">Needs Inspection</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Environmental Context Section (Glassmorphism Overlay) -->
+<section class="relative rounded-xl overflow-hidden py-16 px-12">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover" data-alt="Wide panoramic shot of a rolling farm field at night with deep shadows and soft moonlight reflecting on dark soil" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfFdb1VGEyeppenWOxW4XJ87L4S8k50hCJP1oH4fBVO-VpYyW2rey4z8GzBmKTT8CYxscMkPGYFhdp6LNMddXPLB1-wXVBY9K4QLOfSCNRhDqsa0pBnh_Tz14f0RDUDe0i7QZT4iwpWm05P1bIBuqjEmwS9QD5ql-mHGnIDtBBb3cgOYDGcVfuXi9g8x-vWm6hSruPEn7HNxp6_pUJUhu9n-tMlaU4w1ASWdfCpJDcTRFaYUG8gV12etFg_FiFn2O1txVdBimUHEk"/>
+<div class="absolute inset-0 bg-background/60 backdrop-blur-sm"></div>
+</div>
+<div class="relative z-10 grid md:grid-cols-2 gap-12 items-center">
+<div>
+<h3 class="text-3xl font-headline font-bold text-on-surface mb-4">Advisory Overview</h3>
+<p class="text-on-surface-variant text-lg leading-relaxed">
+                        Incoming front from the Northwest at 04:00. Recommend sealing the North Barn and pre-irrigating the lower terrace to mitigate surface dust.
+                    </p>
+<button class="mt-8 px-8 py-3 bg-primary text-on-primary font-semibold rounded-full flex items-center gap-2 hover:opacity-90 transition-all">
+                        Open Advisory Map
+                        <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="glass-panel p-6 rounded-2xl border border-white/5">
+<span class="material-symbols-outlined text-secondary mb-2" data-icon="air">air</span>
+<p class="text-2xl font-bold">14 km/h</p>
+<p class="text-[10px] text-on-surface-variant uppercase">Wind Speed</p>
+</div>
+<div class="glass-panel p-6 rounded-2xl border border-white/5">
+<span class="material-symbols-outlined text-secondary mb-2" data-icon="humidity_low">humidity_low</span>
+<p class="text-2xl font-bold">68%</p>
+<p class="text-[10px] text-on-surface-variant uppercase">Soil Moisture</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Navigation Components -->
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-zinc-950/90 backdrop-blur-2xl z-50 rounded-t-[1.5rem] shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
+<button class="flex flex-col items-center justify-center bg-emerald-800/40 text-emerald-300 rounded-2xl px-4 py-1.5 transition-all">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400 tap-highlight-none active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="satellite_alt">satellite_alt</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Satellite</span>
+</button>
+<button class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400 tap-highlight-none active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">AI Assistant</span>
+</button>
+<button class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400 tap-highlight-none active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Market</span>
+</button>
+<button class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400 tap-highlight-none active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Advisory</span>
+</button>
+</nav>
+<!-- Large FAB for contextual rural action -->
+<button class="fixed bottom-24 right-8 w-16 h-16 bg-gradient-to-br from-primary to-primary-container rounded-full shadow-2xl flex items-center justify-center text-on-primary z-40 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined text-3xl" data-icon="add" style="font-variation-settings: 'FILL' 0;">add</span>
+</button>
+</body></html>

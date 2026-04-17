@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#88d982",
+                    "background": "#121412",
+                    "tertiary-container": "#b14b6f",
+                    "secondary": "#b4cad6",
+                    "on-tertiary-fixed": "#3f001c",
+                    "error-container": "#93000a",
+                    "surface-container-low": "#1a1c1a",
+                    "inverse-on-surface": "#2f312e",
+                    "surface-container-lowest": "#0d0f0d",
+                    "tertiary": "#ffb1c7",
+                    "tertiary-fixed": "#ffd9e2",
+                    "surface-variant": "#333533",
+                    "surface-container": "#1e201e",
+                    "on-primary": "#003909",
+                    "inverse-primary": "#1b6d24",
+                    "on-primary-fixed-variant": "#005312",
+                    "surface-dim": "#121412",
+                    "primary-fixed-dim": "#88d982",
+                    "on-tertiary-container": "#ffedf0",
+                    "error": "#ffb4ab",
+                    "on-secondary-fixed-variant": "#354a53",
+                    "surface-container-high": "#292a28",
+                    "on-secondary": "#1e333c",
+                    "outline-variant": "#40493d",
+                    "on-background": "#e2e3df",
+                    "on-tertiary": "#610931",
+                    "secondary-container": "#374c56",
+                    "on-error": "#690005",
+                    "secondary-fixed-dim": "#b4cad6",
+                    "surface-tint": "#88d982",
+                    "on-primary-container": "#cbffc2",
+                    "on-surface-variant": "#bfcaba",
+                    "primary-fixed": "#a3f69c",
+                    "on-error-container": "#ffdad6",
+                    "outline": "#8a9485",
+                    "inverse-surface": "#e2e3df",
+                    "primary-container": "#2e7d32",
+                    "surface-bright": "#383a37",
+                    "on-primary-fixed": "#002204",
+                    "tertiary-fixed-dim": "#ffb1c7",
+                    "on-surface": "#e2e3df",
+                    "surface-container-highest": "#333533",
+                    "on-tertiary-fixed-variant": "#7f2448",
+                    "secondary-fixed": "#cfe6f2",
+                    "on-secondary-container": "#a6bcc7",
+                    "surface": "#121412",
+                    "on-secondary-fixed": "#071e27"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Lexend"],
+                    "label": ["Lexend"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-emerald-950/80 backdrop-blur-xl flex items-center justify-between px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-emerald-400" data-icon="forest">forest</span>
+<h1 class="font-lexend tracking-tight text-emerald-50 text-xl font-bold tracking-widest text-emerald-400 uppercase">Midnight Arboretum</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:bg-emerald-900/30 transition-colors p-2 rounded-full active:scale-95 duration-100">
+<span class="material-symbols-outlined text-emerald-400" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 px-4 max-w-2xl mx-auto flex flex-col gap-6">
+<!-- Editorial Header Hook -->
+<div class="mt-8 mb-4">
+<span class="label-md uppercase tracking-[0.2em] text-primary font-semibold text-xs">Real-Time Intelligence</span>
+<h2 class="text-4xl font-headline font-bold text-on-background leading-tight">Terra Mind Advisory</h2>
+</div>
+<!-- Chat Interface Layer -->
+<div class="flex flex-col gap-6 mb-20">
+<!-- System Alert Message -->
+<div class="flex flex-col items-start max-w-[85%]">
+<div class="bg-surface-container-high p-4 rounded-xl rounded-tl-none shadow-lg">
+<p class="text-on-surface-variant text-sm mb-1 font-medium">Terra Mind AI • 08:42 AM</p>
+<p class="text-on-surface leading-relaxed">Good morning. Overnight satellite sweeps indicate critical moisture variance in the North Sector.</p>
+</div>
+</div>
+<!-- Map Message (Visual Component) -->
+<div class="flex flex-col items-start max-w-[90%]">
+<div class="bg-surface-container-high p-2 rounded-2xl rounded-tl-none shadow-2xl overflow-hidden">
+<div class="relative rounded-xl overflow-hidden aspect-video group">
+<img class="w-full h-full object-cover" data-alt="top-down satellite heat map of farmland with vibrant red and green color coded zones showing moisture levels" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyg_pVBnrHdp0O4GJx8V-8iGzm1UfDm5pJzvmTzmUz1cN5RO8oCMW3DdDqRu0dzaQxgNL3n0kahnLJCYB1nBzQBcU989R8gTY6INJ3ztGccHW8XQ81khIWiazM1VmtrIwdpDdukJeqKdZjT0-q11Qcn8hm9fLskjLagK0R0v_om8Xhf19x43tX2AwPnkrIpvMRSxDXD_AMOm4dMr8Dk1an7WjHCfWOWL3MgFTNzAIp-wDe8emZGlRcTkpB1P9HAV6rYMOXiudUIM4"/>
+<div class="absolute inset-0 bg-emerald-950/20 mix-blend-overlay"></div>
+<div class="absolute bottom-4 left-4 bg-surface-container-lowest/90 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2">
+<span class="w-2 h-2 bg-error rounded-full animate-pulse"></span>
+<span class="text-[10px] font-bold tracking-wider uppercase text-on-surface">Live Heatmap: Sector 7G</span>
+</div>
+</div>
+<div class="p-3">
+<p class="text-on-surface font-medium text-sm">Zone 2: Water needed now</p>
+<p class="text-on-surface-variant text-[11px] mt-1">Stressed vegetation detected. Critical threshold reached at 04:00.</p>
+</div>
+</div>
+</div>
+<!-- Action Recommendation Cards (Asymmetric Grid) -->
+<div class="grid grid-cols-5 gap-3">
+<div class="col-span-3 bg-primary-container/20 p-4 rounded-2xl flex flex-col justify-between border-l-4 border-primary">
+<span class="material-symbols-outlined text-primary mb-2" data-icon="water_drop">water_drop</span>
+<h3 class="text-primary font-bold text-lg">Irrigation Priority</h3>
+<p class="text-on-surface-variant text-xs mt-1">Activate Zone 2 automated sprayers for 45 minutes.</p>
+</div>
+<div class="col-span-2 bg-surface-container-high p-4 rounded-2xl flex flex-col justify-between">
+<span class="material-symbols-outlined text-secondary mb-2" data-icon="trending_up">trending_up</span>
+<h3 class="text-on-surface font-bold text-sm">Yield Impact</h3>
+<p class="text-on-surface-variant text-xs mt-1">-12% if delayed.</p>
+</div>
+</div>
+<!-- User Response Placeholder (Voice Interaction Focus) -->
+<div class="flex flex-col items-end max-w-[85%] self-end">
+<div class="bg-primary text-on-primary p-4 rounded-xl rounded-tr-none shadow-md">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="graphic_eq">graphic_eq</span>
+<p class="text-sm font-medium">Voice Memo: "Acknowledge. Deploy Zone 2."</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Input Area (Task Focused Replacement for NavBar) -->
+<div class="fixed bottom-0 left-0 w-full p-6 bg-zinc-950/90 backdrop-blur-2xl rounded-t-[2rem] z-50">
+<div class="max-w-2xl mx-auto flex items-center gap-4">
+<div class="flex-1 bg-surface-container-lowest rounded-full px-6 py-3 flex items-center gap-3">
+<span class="material-symbols-outlined text-outline" data-icon="add">add</span>
+<input class="bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline w-full text-sm" placeholder="Type instructions..." type="text"/>
+</div>
+<!-- Voice Reply Button (FAB Style within context) -->
+<button class="bg-primary text-on-primary-fixed w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="mic" style="font-variation-settings: 'FILL' 1;">mic</span>
+</button>
+</div>
+</div>
+<!-- BottomNavBar (Hidden on this transactional/task-focused screen as per Shell Visibility Rule) -->
+<!-- The BottomNavBar is suppressed to prioritize the Messaging Canvas and Voice Reply Action -->
+<nav class="fixed bottom-0 left-0 w-full flex md:hidden justify-around items-center px-4 pb-6 pt-3 bg-zinc-950/90 backdrop-blur-2xl z-40 rounded-t-[1.5rem] shadow-[0_-8px_30px_rgb(0,0,0,0.12)] opacity-0 pointer-events-none">
+<!-- Structural shell preserved for potential navigation but visibility set to zero for this specific UI state -->
+</nav>
+<!-- Navigation Drawer (Global Context) -->
+<aside class="fixed left-0 top-0 h-full w-80 bg-zinc-900 rounded-r-[1.5rem] shadow-2xl shadow-black -translate-x-full lg:translate-x-0 transition-transform duration-300 z-40 p-6 flex flex-col hidden">
+<div class="mb-10 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-emerald-800">
+<img class="w-full h-full object-cover" data-alt="portrait of a confident farmer in a dark emerald green shirt with a background of misty greenhouses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDBlBtSNsjS-Dx-BN3ia9x9aUZM1VB0dAzUavWqIz5M1VkLLOGjzlIux8N_T_YzzfLOT9vzYq1cOLqUcQj7cR_TZZ0apAgh-H8lzJrdp4rGMyQKmb5ufXnqUlvSLxVQzd_GeeCPdZTNV5Oev-Hqc8a4dmYt1oieS9n3-a7ca1Afga08mQk51-HzRQf19DBCYIiYKgxMp1wz2OIbfAubqmLyB17M1nMEhn2leBkjDBQ3Fatr5lA8mMjtWreXrf-yrR_-T86QRyAzpE"/>
+</div>
+<div>
+<h4 class="font-lexend text-emerald-400 font-bold">Arboretum Admin</h4>
+<p class="font-lexend text-[10px] text-zinc-500 uppercase tracking-widest">Sector 7G - Premium</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<div class="flex items-center gap-4 p-4 rounded-xl text-zinc-400 hover:bg-emerald-800/10 hover:text-emerald-200 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="home_work">home_work</span>
+<span class="text-sm font-medium">Homestead View</span>
+</div>
+<div class="flex items-center gap-4 p-4 rounded-xl bg-emerald-900/20 text-emerald-400 font-semibold transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="text-sm font-medium">Advisory</span>
+</div>
+<div class="flex items-center gap-4 p-4 rounded-xl text-zinc-400 hover:bg-emerald-800/10 hover:text-emerald-200 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="grass">grass</span>
+<span class="text-sm font-medium">Soil Health</span>
+</div>
+<div class="flex items-center gap-4 p-4 rounded-xl text-zinc-400 hover:bg-emerald-800/10 hover:text-emerald-200 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</div>
+</nav>
+</aside>
+</body></html>

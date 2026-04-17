@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Terra Mind | Satellite Monitoring</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#88d982",
+                    "background": "#121412",
+                    "tertiary-container": "#b14b6f",
+                    "secondary": "#b4cad6",
+                    "on-tertiary-fixed": "#3f001c",
+                    "error-container": "#93000a",
+                    "surface-container-low": "#1a1c1a",
+                    "inverse-on-surface": "#2f312e",
+                    "surface-container-lowest": "#0d0f0d",
+                    "tertiary": "#ffb1c7",
+                    "tertiary-fixed": "#ffd9e2",
+                    "surface-variant": "#333533",
+                    "surface-container": "#1e201e",
+                    "on-primary": "#003909",
+                    "inverse-primary": "#1b6d24",
+                    "on-primary-fixed-variant": "#005312",
+                    "surface-dim": "#121412",
+                    "primary-fixed-dim": "#88d982",
+                    "on-tertiary-container": "#ffedf0",
+                    "error": "#ffb4ab",
+                    "on-secondary-fixed-variant": "#354a53",
+                    "surface-container-high": "#292a28",
+                    "on-secondary": "#1e333c",
+                    "outline-variant": "#40493d",
+                    "on-background": "#e2e3df",
+                    "on-tertiary": "#610931",
+                    "secondary-container": "#374c56",
+                    "on-error": "#690005",
+                    "secondary-fixed-dim": "#b4cad6",
+                    "surface-tint": "#88d982",
+                    "on-primary-container": "#cbffc2",
+                    "on-surface-variant": "#bfcaba",
+                    "primary-fixed": "#a3f69c",
+                    "on-error-container": "#ffdad6",
+                    "outline": "#8a9485",
+                    "inverse-surface": "#e2e3df",
+                    "primary-container": "#2e7d32",
+                    "surface-bright": "#383a37",
+                    "on-primary-fixed": "#002204",
+                    "tertiary-fixed-dim": "#ffb1c7",
+                    "on-surface": "#e2e3df",
+                    "surface-container-highest": "#333533",
+                    "on-tertiary-fixed-variant": "#7f2448",
+                    "secondary-fixed": "#cfe6f2",
+                    "on-secondary-container": "#a6bcc7",
+                    "surface": "#121412",
+                    "on-secondary-fixed": "#071e27"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Lexend"],
+                    "label": ["Lexend"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Lexend', sans-serif; background-color: #121412; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .map-overlay-gradient {
+            background: radial-gradient(circle at center, transparent 0%, rgba(18, 20, 18, 0.4) 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-background overflow-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-emerald-950/80 backdrop-blur-xl flex items-center justify-between px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-emerald-400">forest</span>
+<h1 class="text-xl font-bold tracking-widest text-emerald-400 uppercase font-lexend">Midnight Arboretum</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-emerald-900/30 transition-colors text-emerald-50 active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-emerald-900/30 transition-colors text-emerald-400 active:scale-95">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content: Full-Screen GIS Map -->
+<main class="relative h-screen w-full pt-16 overflow-hidden">
+<!-- GIS Map Base -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-surface-container-lowest relative">
+<img alt="GIS map view" class="w-full h-full object-cover grayscale brightness-50 opacity-40" data-alt="top-down satellite view of segmented agricultural land with complex field patterns and dark soil contrasts" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDELLIlGn0Fv2xLnlqafKYyBAnSlwvZkCqC8bp3XwVdgwvJSX80UzZTwspLK4fuZFZV2ENIpcNy6wEQMJ49YuexC0cwLiNWdFgpEcHBdnXEgPZq4drxpX6FEBtcIEM1iPB9voy9uyz08HQuaXFuvMrUia14VMxaqmsDV_7l-Gr9kL5_1_s1U7ybQfjzUKI882aY9y4P4GHa1baNXd_H4ytttGlGIhqJyBC9Uy-0z5K5ueDNulMYs2BC5ShQXWn7TrwKRlejEDr2Jow"/>
+<div class="absolute inset-0 map-overlay-gradient"></div>
+<!-- GIS Zone Overlay (Represented by SVG Polygons) -->
+<svg class="absolute inset-0 w-full h-full opacity-60" preserveaspectratio="none" viewbox="0 0 1000 1000">
+<!-- Red Zone: High Risk -->
+<path class="hover:fill-red-500 transition-colors cursor-pointer" d="M100,100 L300,150 L250,400 L50,350 Z" fill="#93000a"></path>
+<!-- Yellow Zone: Moderate -->
+<path class="hover:fill-yellow-400 transition-colors cursor-pointer" d="M350,200 L600,180 L650,450 L400,500 Z" fill="#facc15"></path>
+<!-- Green Zone: Healthy -->
+<path class="hover:fill-primary transition-colors cursor-pointer" d="M620,150 L900,100 L950,550 L680,600 Z" fill="#2e7d32"></path>
+<!-- Green Zone: Healthy -->
+<path class="hover:fill-primary transition-colors cursor-pointer" d="M100,450 L350,550 L300,850 L50,800 Z" fill="#2e7d32"></path>
+</svg>
+</div>
+</div>
+<!-- Floating Controls: Zoom & Location -->
+<div class="absolute right-6 top-24 z-30 flex flex-col gap-3">
+<div class="flex flex-col bg-surface-container-high/60 backdrop-blur-md rounded-xl overflow-hidden shadow-2xl">
+<button class="p-3 text-on-surface hover:bg-emerald-900/30 transition-all active:scale-90">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="p-3 text-on-surface hover:bg-emerald-900/30 transition-all active:scale-90">
+<span class="material-symbols-outlined">remove</span>
+</button>
+</div>
+<button class="bg-primary p-4 rounded-full text-on-primary-fixed shadow-lg hover:shadow-primary/20 active:scale-90 transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">my_location</span>
+</button>
+</div>
+<!-- Legend -->
+<div class="absolute left-6 top-24 z-30">
+<div class="bg-surface-container-high/60 backdrop-blur-md p-4 rounded-2xl shadow-xl space-y-4">
+<div class="text-[10px] uppercase tracking-[0.2em] font-bold text-on-surface-variant">Field Status</div>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-primary shadow-[0_0_8px_#88d982]"></div>
+<span class="text-xs font-medium text-on-surface">Optimal Vitality</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]"></div>
+<span class="text-xs font-medium text-on-surface">Stressed Area</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-error shadow-[0_0_8px_#ffb4ab]"></div>
+<span class="text-xs font-medium text-on-surface">Critical Intervention</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Selected Zone Popup Card -->
+<div class="absolute left-6 bottom-32 z-40 max-w-sm w-full">
+<div class="bg-surface-container-high/90 backdrop-blur-2xl rounded-3xl p-6 shadow-2xl border-l-4 border-primary">
+<div class="flex justify-between items-start mb-6">
+<div>
+<div class="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Sector 09-Alpha</div>
+<h2 class="text-2xl font-bold text-on-surface font-headline">Heirloom Orchard</h2>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-on-surface">more_vert</span>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-8">
+<div class="bg-surface-container-lowest p-4 rounded-2xl">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-sm">fluid_med</span>
+<span class="text-[10px] text-on-surface-variant font-medium">Soil Health</span>
+</div>
+<div class="text-xl font-bold text-on-surface">92<span class="text-xs text-on-surface-variant ml-0.5">%</span></div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-2xl">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-secondary text-sm">water_drop</span>
+<span class="text-[10px] text-on-surface-variant font-medium">Moisture</span>
+</div>
+<div class="text-xl font-bold text-on-surface">45<span class="text-xs text-on-surface-variant ml-0.5">%</span></div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-2xl col-span-2 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-sm">coronavirus</span>
+<span class="text-[10px] text-on-surface-variant font-medium">Disease Risk</span>
+</div>
+<div class="text-sm font-bold text-primary bg-primary/10 px-3 py-1 rounded-full uppercase tracking-tighter">Low</div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Recommended Actions</div>
+<ul class="space-y-3">
+<li class="flex items-start gap-3 group">
+<div class="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 group-hover:scale-150 transition-transform"></div>
+<p class="text-sm text-on-surface leading-relaxed">Initiate localized nitrogen enrichment for the northwestern grid.</p>
+</li>
+<li class="flex items-start gap-3 group">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary mt-1.5 group-hover:scale-150 transition-transform"></div>
+<p class="text-sm text-on-surface leading-relaxed">Schedule sub-surface irrigation cycle at 22:00.</p>
+</li>
+</ul>
+</div>
+<button class="w-full mt-8 py-4 px-6 bg-gradient-to-br from-primary to-primary-container text-on-primary-fixed font-bold rounded-full text-sm hover:shadow-[0_0_20px_rgba(136,217,130,0.3)] active:scale-95 transition-all">
+                    Deploy Field Drone
+                </button>
+</div>
+</div>
+</main>
+<!-- NavigationDrawer (Hidden on Mobile, Logic Anchor) -->
+<aside class="hidden lg:flex fixed left-0 top-16 h-[calc(100vh-64px)] w-20 flex-col items-center py-8 bg-zinc-900 z-50 border-r border-outline-variant/10">
+<div class="flex flex-col gap-8">
+<button class="p-3 rounded-2xl text-zinc-400 hover:bg-emerald-800/10 hover:text-emerald-200 transition-all">
+<span class="material-symbols-outlined">home_work</span>
+</button>
+<button class="p-3 rounded-2xl bg-emerald-900/20 text-emerald-400 font-semibold transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">satellite_alt</span>
+</button>
+<button class="p-3 rounded-2xl text-zinc-400 hover:bg-emerald-800/10 hover:text-emerald-200 transition-all">
+<span class="material-symbols-outlined">grass</span>
+</button>
+<button class="p-3 rounded-2xl text-zinc-400 hover:bg-emerald-800/10 hover:text-emerald-200 transition-all">
+<span class="material-symbols-outlined">water_drop</span>
+</button>
+<div class="mt-auto flex flex-col gap-8">
+<button class="p-3 rounded-2xl text-zinc-400 hover:bg-emerald-800/10 hover:text-emerald-200 transition-all">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- BottomNavBar (Mobile Visible Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-zinc-950/90 backdrop-blur-2xl rounded-t-[1.5rem] z-50 shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
+<div class="flex flex-col items-center justify-center text-zinc-500 py-1.5 font-lexend text-[10px] font-medium tracking-wide">
+<span class="material-symbols-outlined mb-1">dashboard</span>
+<span>Home</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-emerald-800/40 text-emerald-300 rounded-2xl px-4 py-1.5 transition-all font-lexend text-[10px] font-medium tracking-wide">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">satellite_alt</span>
+<span>Satellite</span>
+</div>
+<div class="flex flex-col items-center justify-center text-zinc-500 py-1.5 font-lexend text-[10px] font-medium tracking-wide">
+<span class="material-symbols-outlined mb-1">psychology</span>
+<span>AI Assistant</span>
+</div>
+<div class="flex flex-col items-center justify-center text-zinc-500 py-1.5 font-lexend text-[10px] font-medium tracking-wide">
+<span class="material-symbols-outlined mb-1">trending_up</span>
+<span>Market</span>
+</div>
+<div class="flex flex-col items-center justify-center text-zinc-500 py-1.5 font-lexend text-[10px] font-medium tracking-wide">
+<span class="material-symbols-outlined mb-1">chat</span>
+<span>Advisory</span>
+</div>
+</nav>
+<!-- Background Decorative Elements -->
+<div class="fixed top-[20%] right-[-10%] w-[400px] h-[400px] bg-primary-container/10 blur-[150px] -z-10 rounded-full"></div>
+<div class="fixed bottom-[-10%] left-[-5%] w-[300px] h-[300px] bg-emerald-900/10 blur-[120px] -z-10 rounded-full"></div>
+</body></html>

@@ -1,0 +1,83 @@
+# TerraMind — Complete Agentic Precision Agriculture Project Master Prompt
+
+## 1. Project Background & Original Scope
+TerraMind began as an AI-powered precision agriculture platform concept. The initial work included Python matplotlib visualization scripts generating a presentation slide deck (architecture diagrams, feature cards like "crop selection", "water waste", "disease detection").
+
+Scripts included:
+- `architecture.py` (Full architectural workflow)
+- `generate_cards.py` (Individual feature cards)
+- `generate_centre.py` / `generate_hub.py` / `generate_farmer_centre.py`
+- `graph_crop_loss.py`, `graph_income_vs_cost.py` (OWID + Dark theme versions comparing losses against income)
+- `proposed_solution_v2.py` (Slide generation)
+
+**Hackathon Requirement:** The project needs to move from a visual deck into an actual functioning Web Platform. Following a 4-day, 80% implementation plan, the focus is the "Wow Factor" 3D Field Viewer, connecting subsequently to an AI/FastAPI backend.
+
+## 2. Complete Free-Tier Tech Stack Architecture
+
+### Frontend (Website)
+- **Framework & Language:** Next.js 16 (App Router), TypeScript
+- **Styling & UI:** Tailwind CSS, shadcn/ui, framer-motion, Lucide React
+- **3D Visualization:** Three.js, React Three Fiber (R3F), `@react-three/drei`
+- **Geospatial Processing:** Leaflet.js, Turf.js, proj4js, pmtiles
+- **State & Data:** Zustand, TanStack Query, React Hook Form, Zod
+- **Charts:** Recharts, TanStack Table
+- **Offline / Caching:** Dexie.js (IndexedDB)
+
+### Backend (FastAPI - Planned)
+- **Framework:** FastAPI, Uvicorn, Pydantic, httpx
+- **Database:** PostgreSQL + PostGIS (via Supabase), SQLAlchemy (async), pgvector
+- **Cache/Queue:** Redis (Upstash), Celery
+- **Geospatial Processing:** rasterio, geopandas, shapely, pystac-client, spyndex
+- **Hosting / Storage:** Railway (Backend), Cloudflare R2 (S3-compatible image hosting)
+
+### Machine Learning & AI Components (All Free Tier)
+1. **Autonomous Field Agent:** Google Gemini 1.5 Flash (for vision analysis of satellite images and proactive reporting).
+2. **Fast Reasoning & Tool Calling:** Groq (Llama-3.3-70B Versatile).
+3. **Offline Fallback / Edge:** Ollama (Llama-3.2 local LLM).
+4. **Disease Detection:** Ultralytics YOLOv11 local execution via edge image analysis.
+5. **RAG / Knowledge Retrieval:** `sentence-transformers` (all-MiniLM-L6-v2) embedding ICAR manuals stored iteratively in `ChromaDB`.
+6. **Voice I/O:** `openai-whisper` (STT local for Hindi/Tamil/Marathi) + `gTTS`/`pyttsx3` (TTS).
+7. **Yield Prediction:** XGBoost + Scikit-Learn.
+8. **Temporal SAR Trend Analysis:** `tsfresh` + `statsmodels` evaluating 5-year S1 timelines.
+9. **Agent Orchestration:** LangChain + CrewAI.
+
+## 3. Data Ingestion (7 Core Sources)
+1. Field Polygon (Leaflet GPS plot)
+2. Voice Audio
+3. Farmer Camera Images
+4. Sentinel-1 (SAR) & Sentinel-2 (Multispectral)
+5. ISRIC SoilGrids API
+6. Open-Meteo API (5-day free)
+7. Agmarknet / Mandi APIs (Prices)
+
+## 4. Current State: The Frontend Implementation Journey
+
+The first phase of the roadmap—the **Interactive 3D Field Viewer**—has been successfully executed with extensive visual polish, utilizing simulated (mock) realistic textures.
+
+### Completed 3D Models & UI Systems:
+- **`TerrainMesh.tsx`:** Consumes a heightmap PNG to map vertices up/down to simulate true terrain hills via `displacementMap` upscaled to `256x256` segmentation with corrected `THREE.NoColorSpace`.
+- **`NDVIOverlay.tsx`:** Layers a transparent (opacity 0.6) heatmap gradient atop the terrain.
+- **`FieldScene.tsx` & Atmosphere:** Features a highly realistic daytime environment (`<Sky>`, `<Environment>`, `<directionalLight>` casting physical shadows) bypassing the old flat-mesh starfield design.
+- **`CropInstances.tsx`:** Calculates Raycaster Point-In-Polygon boundaries dynamically generating thousands of crop meshes mathematically aligned inside the drawn field.
+
+### UI Enhancements & Flow:
+- **Quadrant Automation:** Added a `CameraAnimator` utilizing spherical vector `lerp`. When an AI Insight module is selected, the OrbitControls smoothly swoop dynamically into the target [x, z] localized field sector.
+- **Insight Panel:** Replaced messy alerts with a right-aligned glassmorphism AI recommendations board bridging Hindi/English localizations seamlessly.
+- **Compare Mode:** An interactive slider exposing "LAST MONTH" vs "CURRENT" NDVI states via a 3D HTML clip-path overlay.
+- **Soil Grid Deep Dive:** Completed a specific `/field/soil` component featuring detailed nutrient stat pills, degradation Zone Cards, and a 4x4 matrix view. Build errors referencing static properties (`depth_cm`) were resolved to validate NextJS Turbopack compilation.
+
+## 5. Next Critical Milestones (The 4-Day Plan Continuation)
+We are currently 100% stable on the frontend with the 3D Viewer rendering beautifully locally (`localhost:3000`).
+
+**Remaining Steps to 80% MVP Finalization:**
+1. **FastAPI Initialization:** Creating the foundational endpoints (`POST /api/v1/farms`).
+2. **Sentinel-2 Data Pipeline:** Connecting `pystac_client` to Planetary Computer (fetching remote B4 & B8 layers) and generating actual real-time `ndvi.png` and `heightmap.png` instances locally via python.
+3. **ML Integration:** Deploying the YOLOv11 inference endpoints.
+4. **Cloud Hookups:** Moving backend to Railway, pushing polygons to Supabase (PostGIS).
+
+## INSTRUCTIONS FOR AI
+When continuing development on TerraMind:
+- Analyze architecture context listed above before answering.
+- Treat NextJS Frontend as functionally *stable* regarding design elements. Focus primarily on integrating real Backend APIs instead of modifying generic UI styling unless requested.
+- Maintain strict Dark space/agriculture themes with glass-blur elements (`backdrop-blur`).
+- All integrations must strictly adhere to the Free-Tier tooling mentioned (Gemini 1.5, Ollama, Supabase, Cloudflare R2).

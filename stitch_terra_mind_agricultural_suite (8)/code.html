@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Terra Mind AI Assistant</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#88d982",
+                    "background": "#121412",
+                    "tertiary-container": "#b14b6f",
+                    "secondary": "#b4cad6",
+                    "on-tertiary-fixed": "#3f001c",
+                    "error-container": "#93000a",
+                    "surface-container-low": "#1a1c1a",
+                    "inverse-on-surface": "#2f312e",
+                    "surface-container-lowest": "#0d0f0d",
+                    "tertiary": "#ffb1c7",
+                    "tertiary-fixed": "#ffd9e2",
+                    "surface-variant": "#333533",
+                    "surface-container": "#1e201e",
+                    "on-primary": "#003909",
+                    "inverse-primary": "#1b6d24",
+                    "on-primary-fixed-variant": "#005312",
+                    "surface-dim": "#121412",
+                    "primary-fixed-dim": "#88d982",
+                    "on-tertiary-container": "#ffedf0",
+                    "error": "#ffb4ab",
+                    "on-secondary-fixed-variant": "#354a53",
+                    "surface-container-high": "#292a28",
+                    "on-secondary": "#1e333c",
+                    "outline-variant": "#40493d",
+                    "on-background": "#e2e3df",
+                    "on-tertiary": "#610931",
+                    "secondary-container": "#374c56",
+                    "on-error": "#690005",
+                    "secondary-fixed-dim": "#b4cad6",
+                    "surface-tint": "#88d982",
+                    "on-primary-container": "#cbffc2",
+                    "on-surface-variant": "#bfcaba",
+                    "primary-fixed": "#a3f69c",
+                    "on-error-container": "#ffdad6",
+                    "outline": "#8a9485",
+                    "inverse-surface": "#e2e3df",
+                    "primary-container": "#2e7d32",
+                    "surface-bright": "#383a37",
+                    "on-primary-fixed": "#002204",
+                    "tertiary-fixed-dim": "#ffb1c7",
+                    "on-surface": "#e2e3df",
+                    "surface-container-highest": "#333533",
+                    "on-tertiary-fixed-variant": "#7f2448",
+                    "secondary-fixed": "#cfe6f2",
+                    "on-secondary-container": "#a6bcc7",
+                    "surface": "#121412",
+                    "on-secondary-fixed": "#071e27"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Lexend"],
+                    "label": ["Lexend"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-blur {
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+      }
+      body {
+        font-family: 'Lexend', sans-serif;
+        background-color: #121412;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface overflow-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-emerald-950/80 backdrop-blur-xl flex items-center justify-between px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-emerald-400" data-icon="forest">forest</span>
+<h1 class="font-lexend tracking-tight text-emerald-50 text-xl font-bold tracking-widest text-emerald-400 uppercase">Midnight Arboretum</h1>
+</div>
+<div class="flex items-center gap-4">
+<!-- Language Toggle -->
+<div class="flex bg-surface-container-low p-1 rounded-full border border-outline-variant/10">
+<button class="px-3 py-1 text-[10px] font-bold rounded-full bg-primary text-on-primary">EN</button>
+<button class="px-3 py-1 text-[10px] font-bold rounded-full text-on-surface-variant hover:text-on-surface">HI</button>
+<button class="px-3 py-1 text-[10px] font-bold rounded-full text-on-surface-variant hover:text-on-surface">TA</button>
+</div>
+<span class="material-symbols-outlined text-emerald-400" data-icon="account_circle">account_circle</span>
+</div>
+</header>
+<!-- Main Content Canvas (Chat Interface) -->
+<main class="h-screen pt-20 pb-32 px-4 md:px-12 flex flex-col max-w-5xl mx-auto relative">
+<!-- Background Decoration (Verdent Blur) -->
+<div class="fixed top-1/4 right-[-100px] w-[400px] h-[400px] bg-primary-container/10 rounded-full blur-[150px] pointer-events-none"></div>
+<div class="fixed bottom-1/4 left-[-100px] w-[400px] h-[400px] bg-primary/5 rounded-full blur-[150px] pointer-events-none"></div>
+<!-- Chat History -->
+<div class="flex-1 overflow-y-auto space-y-8 py-6 scroll-smooth pr-2">
+<!-- System/AI Message -->
+<div class="flex flex-col items-start max-w-[85%] animate-fade-in">
+<div class="flex items-center gap-2 mb-2 ml-2">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] text-on-primary-container" data-icon="psychology" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-primary">Terra Mind</span>
+</div>
+<div class="bg-surface-container-high text-on-surface p-5 rounded-2xl rounded-tl-none shadow-xl relative group">
+<p class="body-md leading-relaxed">Vanakkam! Welcome back to Sector 7G. I’ve noticed the soil moisture is slightly low in the North Ridge. Would you like me to check the irrigation schedule?</p>
+<button class="mt-3 flex items-center gap-2 text-primary hover:bg-primary/10 px-3 py-1.5 rounded-full transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="volume_up">volume_up</span>
+<span class="text-[12px] font-medium">Listen</span>
+</button>
+</div>
+<span class="text-[10px] mt-2 ml-4 text-on-surface-variant/60">10:42 AM</span>
+</div>
+<!-- User Message -->
+<div class="flex flex-col items-end max-w-[85%] ml-auto">
+<div class="bg-primary-container text-on-primary-container p-5 rounded-2xl rounded-tr-none shadow-lg">
+<p class="body-md leading-relaxed">Yes, please. Also, tell me if there are any signs of leaf rust on the saplings today.</p>
+</div>
+<span class="text-[10px] mt-2 mr-4 text-on-surface-variant/60">10:43 AM</span>
+</div>
+<!-- AI Detailed Report (Editorial Card) -->
+<div class="flex flex-col items-start max-w-[90%]">
+<div class="flex items-center gap-2 mb-2 ml-2">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] text-on-primary-container" data-icon="psychology" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-primary">Terra Mind</span>
+</div>
+<div class="bg-surface-container-low p-6 rounded-2xl rounded-tl-none border border-outline-variant/5 shadow-2xl space-y-4">
+<h2 class="text-xl font-headline font-semibold text-primary">Scan Results: Sector 7G</h2>
+<div class="flex gap-4 items-center">
+<img class="w-20 h-20 rounded-xl object-cover grayscale-[0.2] hover:grayscale-0 transition-all" data-alt="close-up of a healthy green leaf with dew drops in a dark moody forest setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj4nBpNothWgevKn5YYLeSI2rcv2aRmNJgdnm1eVL_Kzz3_dwq7l3YdhunU6B0Mg8HHJEU6CwDcxUUVVAie25rIYc9eway30gp2hT7fhm1oYsfgDSYIJihRzbspSK_gyJ10aUjdhchIOuYp2eYudIhQ4KcJvH4aH1_6hVkLoLwAo369O1Xc8QJbotqKw0Ce5oRZb793AslmcoSh8qJBCHw1UwXdp3piNC4h0v5WI0J8zQiUut_QtzjZv9xPjs-3pd39hIftG9mBS8"/>
+<div>
+<p class="text-on-surface body-md">I scanned the satellite imagery. The leaves look clean and vibrant! No rust detected. Irrigation will start in 10 minutes.</p>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2">
+<div class="flex gap-2">
+<button class="bg-primary/10 text-primary p-2 rounded-full hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined" data-icon="play_circle" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+</button>
+<button class="bg-surface-container-highest text-on-surface-variant p-2 rounded-full hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined" data-icon="share">share</span>
+</button>
+</div>
+<span class="text-[10px] font-bold text-tertiary uppercase tracking-widest">Safe &amp; Healthy</span>
+</div>
+</div>
+<span class="text-[10px] mt-2 ml-4 text-on-surface-variant/60">10:44 AM</span>
+</div>
+</div>
+<!-- Input Section (Floating Container) -->
+<div class="fixed bottom-[96px] left-0 w-full px-4 md:px-12 z-40">
+<div class="max-w-5xl mx-auto bg-surface-container-highest/60 backdrop-blur-2xl rounded-3xl p-3 flex items-center gap-3 shadow-2xl border border-outline-variant/10">
+<button class="p-3 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+<div class="flex-1 bg-surface-container-lowest rounded-2xl px-4 py-3 border-b border-outline-variant/20 focus-within:border-primary transition-all">
+<input class="w-full bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/40 font-lexend" placeholder="Ask about your crops..." type="text"/>
+</div>
+<!-- Voice Button -->
+<button class="w-14 h-14 bg-gradient-to-br from-primary to-primary-container rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(136,217,130,0.3)] hover:scale-105 active:scale-95 transition-transform shrink-0">
+<span class="material-symbols-outlined text-on-primary-fixed text-[28px]" data-icon="mic" style="font-variation-settings: 'FILL' 1;">mic</span>
+</button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-zinc-950/90 backdrop-blur-2xl z-50 rounded-t-[1.5rem] shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
+<a class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="satellite_alt">satellite_alt</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Satellite</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-emerald-800/40 text-emerald-300 rounded-2xl px-4 py-1.5 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="psychology" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">AI Assistant</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Market</span>
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-500 py-1.5 hover:text-emerald-400 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-lexend text-[10px] font-medium tracking-wide">Advisory</span>
+</a>
+</nav>
+</body></html>

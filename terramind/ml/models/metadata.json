@@ -1,0 +1,55 @@
+{
+  "feature_cols": [
+    "ndvi",
+    "evi",
+    "savi",
+    "chlorophyll",
+    "moisture",
+    "ph",
+    "soc_pct",
+    "nitrogen",
+    "phosphorus",
+    "potassium",
+    "soil_texture_encoded",
+    "bulk_density",
+    "temperature",
+    "humidity",
+    "suit_score"
+  ],
+  "n_features": 15,
+  "yield_model": {
+    "target": "yield_qtl_acre",
+    "unit": "qtl/acre",
+    "metrics": {
+      "mae": 0.046848494559526443,
+      "rmse": 0.059540435671806335,
+      "r2": 0.9998776316642761
+    }
+  },
+  "crop_model": {
+    "target": "best_crop",
+    "classes": [
+      "Chickpea",
+      "Cotton",
+      "Groundnut",
+      "Maize",
+      "Rice",
+      "Sorghum",
+      "Soybean",
+      "Sugarcane",
+      "Sunflower",
+      "Wheat"
+    ],
+    "n_classes": 10,
+    "metrics": {
+      "accuracy": 1.0
+    }
+  },
+  "soil_texture_map": {
+    "0": "clay_loam",
+    "1": "clay",
+    "2": "loamy",
+    "3": "silty",
+    "4": "sandy"
+  }
+}
